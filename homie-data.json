@@ -1,0 +1,129 @@
+{
+  "users": {
+    "cartune": {
+      "id": "cartune",
+      "name": "Cartune",
+      "email": "cartune@homie.app",
+      "avatar": "👩🏻",
+      "role": "Partner",
+      "accentColor": "#8e1c24",
+      "badgeBg": "#fbe8ea",
+      "badgeText": "#8e1c24"
+    },
+    "gun": {
+      "id": "gun",
+      "name": "Gun",
+      "email": "gun@homie.app",
+      "avatar": "👦🏻",
+      "role": "Partner",
+      "accentColor": "#1e293b",
+      "badgeBg": "#e2e8f0",
+      "badgeText": "#1e293b"
+    }
+  },
+  "currentUser": "gun",
+  "awards": {
+    "points": 0,
+    "targetPoints": 100,
+    "nextReward": "ย้อมผมที่ enrich",
+    "history": []
+  },
+  "pets": [
+    {
+      "id": "leah",
+      "name": "Leah",
+      "gender": "Female",
+      "breed": "Cocker Spenial",
+      "age": "1 yr 10 mo",
+      "weight": "10 Kg",
+      "lastVaccine": "8 Feb 2026",
+      "photo": "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&w=600&q=80",
+      "todayTask": "Shower",
+      "isFavorite": true,
+      "notes": "ร่าเริง ชอบวิ่งเล่นที่สวน อาบน้ำทุกวันเสาร์"
+    },
+    {
+      "id": "lupin",
+      "name": "Lupin",
+      "gender": "Male",
+      "breed": "Persian Cat",
+      "age": "8 yr 3 mo",
+      "weight": "4.2 Kg",
+      "lastVaccine": "15 Jun 2026",
+      "photo": "https://images.unsplash.com/photo-1518791841217-8f162f1e1131?auto=format&fit=crop&w=600&q=80",
+      "todayTask": "Comb Fur",
+      "isFavorite": true,
+      "notes": "ขนยาว ต้องหวีขนสัปดาห์ละ 3 ครั้ง ทานอาหารสูตรบำรุงไต"
+    },
+    {
+      "id": "luka",
+      "name": "Luka",
+      "gender": "Male",
+      "breed": "American shorthair",
+      "age": "5 yr 7 mo",
+      "weight": "4.5 Kg",
+      "lastVaccine": "15 Jun 2026",
+      "photo": "https://images.unsplash.com/photo-1533738363-b7f9aef128ce?auto=format&fit=crop&w=600&q=80",
+      "todayTask": "Check Water",
+      "isFavorite": true,
+      "notes": "ชอบใส่ผ้าพันคอ ขี้อ้อน ชอบนอนบนตัก"
+    }
+  ],
+  "shopping": [],
+  "finance": {
+    "monthName": "September 2026",
+    "totalSpending": 0,
+    "cartunePaid": 0,
+    "gunPaid": 0,
+    "cartunePending": 0,
+    "cartunePendingCount": 0,
+    "gunPending": 0,
+    "gunPendingCount": 0,
+    "budgets": [
+      {
+        "id": "b_util",
+        "name": "Utilities",
+        "spent": 0,
+        "budget": 3000,
+        "icon": "Receipt"
+      },
+      {
+        "id": "b_pets",
+        "name": "Pets",
+        "spent": 0,
+        "budget": 4000,
+        "icon": "PawPrint"
+      },
+      {
+        "id": "b_home",
+        "name": "Home Supplies",
+        "spent": 0,
+        "budget": 3000,
+        "icon": "Home"
+      },
+      {
+        "id": "b_bldg",
+        "name": "Building Fees",
+        "spent": 0,
+        "budget": 2000,
+        "icon": "Building2"
+      },
+      {
+        "id": "b_save",
+        "name": "Saving",
+        "spent": 0,
+        "budget": 2000,
+        "icon": "PiggyBank"
+      }
+    ],
+    "transactions": []
+  },
+  "calendar": {
+    "currentMonthYear": "September 2026",
+    "year": 2026,
+    "month": 9,
+    "selectedDay": 10,
+    "events": [],
+    "moods": {}
+  }
+}
