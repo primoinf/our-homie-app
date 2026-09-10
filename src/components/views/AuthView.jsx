@@ -3,15 +3,21 @@ import { useApp } from '../../context/AppContext'
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react'
 
 export default function AuthView() {
-  const { login } = useApp()
+  const { login, state } = useApp()
   const [tab, setTab] = useState('signin')
   const [showPassword, setShowPassword] = useState(false)
-  const [email, setEmail] = useState('cartune@homie.app')
+  
+  const cartuneUser = state?.users?.cartune || { name: 'Cartune', avatar: '👩🏻', role: 'Partner' }
+  const gunUser = state?.users?.gun || { name: 'Gun', avatar: '👦🏻', role: 'Partner' }
+
+  const [email, setEmail] = useState(cartuneUser.email || 'cartune@homie.app')
   const [password, setPassword] = useState('••••••••')
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    login(email.includes('gun') ? 'gun' : 'cartune')
+    const isGun = email.toLowerCase().includes('gun') || 
+                  email.toLowerCase().includes((gunUser.name || '').toLowerCase())
+    login(isGun ? 'gun' : 'cartune')
   }
 
   return (
@@ -141,32 +147,42 @@ export default function AuthView() {
 
         {/* Quick Profile Selection */}
         <div className="mt-8 pt-5 border-t border-stone-200/60 w-full max-w-xs">
-          <p className="text-[11px] font-bold text-stone-500 uppercase tracking-wider mb-1">
+          <p className="text-[11px] font-bold text-stone-600 uppercase tracking-wider mb-1">
             เลือกโปรไฟล์ของคุณเพื่อเข้าใช้งาน
           </p>
           <p className="text-[10px] text-stone-400 mb-3">
             (เลือกครั้งเดียว เครื่องนี้จะจำโปรไฟล์ของคุณตลอดไป)
           </p>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2.5">
             <button
               onClick={() => login('cartune')}
-              className="w-full py-3 px-4 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-2xl text-xs font-bold text-rose-800 flex items-center justify-between shadow-2xs active:scale-98 transition-all cursor-pointer"
+              className="w-full py-3 px-4 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-2xl text-xs font-bold text-rose-800 flex items-center justify-between shadow-2xs active:scale-98 transition-all cursor-pointer group"
             >
-              <div className="flex items-center gap-2">
-                <span className="text-xl">👩🏻</span>
-                <span>เข้าใช้งานเป็น Cartune</span>
+              <div className="flex items-center gap-2.5">
+                <span className="text-2xl group-hover:scale-110 transition-transform">{cartuneUser.avatar || '👩🏻'}</span>
+                <div className="text-left">
+                  <div className="text-sm font-extrabold text-stone-900">{cartuneUser.name}</div>
+                  <div className="text-[10px] text-rose-600 font-semibold">{cartuneUser.role || 'Member'}</div>
+                </div>
               </div>
-              <span className="text-[11px] font-semibold text-rose-400">เข้าสู่ระบบ →</span>
+              <span className="text-[11px] font-bold text-rose-600 bg-white/90 px-3 py-1 rounded-xl border border-rose-200 shadow-2xs">
+                เข้าใช้งาน →
+              </span>
             </button>
             <button
               onClick={() => login('gun')}
-              className="w-full py-3 px-4 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-2xl text-xs font-bold text-slate-800 flex items-center justify-between shadow-2xs active:scale-98 transition-all cursor-pointer"
+              className="w-full py-3 px-4 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-2xl text-xs font-bold text-slate-800 flex items-center justify-between shadow-2xs active:scale-98 transition-all cursor-pointer group"
             >
-              <div className="flex items-center gap-2">
-                <span className="text-xl">👦🏻</span>
-                <span>เข้าใช้งานเป็น Gun</span>
+              <div className="flex items-center gap-2.5">
+                <span className="text-2xl group-hover:scale-110 transition-transform">{gunUser.avatar || '👦🏻'}</span>
+                <div className="text-left">
+                  <div className="text-sm font-extrabold text-stone-900">{gunUser.name}</div>
+                  <div className="text-[10px] text-slate-600 font-semibold">{gunUser.role || 'Member'}</div>
+                </div>
               </div>
-              <span className="text-[11px] font-semibold text-slate-400">เข้าสู่ระบบ →</span>
+              <span className="text-[11px] font-bold text-slate-700 bg-white/90 px-3 py-1 rounded-xl border border-slate-300 shadow-2xs">
+                เข้าใช้งาน →
+              </span>
             </button>
           </div>
         </div>

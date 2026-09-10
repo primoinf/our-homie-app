@@ -4,10 +4,13 @@ import { Wallet, Plus, Check, Clock, Utensils, PawPrint, Receipt, Home, Wrench, 
 
 export default function FinanceView() {
   const { state, addExpense, deleteExpense } = useApp()
+  const cartuneName = state?.users?.cartune?.name || 'Cartune'
+  const gunName = state?.users?.gun?.name || 'Gun'
+
   const [showAddModal, setShowAddModal] = useState(false)
   const [title, setTitle] = useState('')
   const [amount, setAmount] = useState('')
-  const [payer, setPayer] = useState(state.users[state.currentUser]?.name || 'Cartune')
+  const [payer, setPayer] = useState(state.currentUser === 'gun' ? gunName : cartuneName)
   const [category, setCategory] = useState('Food')
 
   const { finance } = state
@@ -31,7 +34,7 @@ export default function FinanceView() {
     addExpense({
       title: title.trim(),
       amount: parseFloat(amount),
-      payer,
+      payer: payer.toLowerCase().includes(gunName.toLowerCase()) || payer.toLowerCase().includes('gun') ? 'Gun' : 'Cartune',
       category
     })
     setTitle('')
@@ -42,9 +45,9 @@ export default function FinanceView() {
   // Calculate settlement: Cartune paid vs Gun paid
   const diff = finance.gunPaid - finance.cartunePaid
   const settleSummary = diff > 0
-    ? `Cartune owes Gun ฿${(diff / 2).toLocaleString()}`
+    ? `${cartuneName} owes ${gunName} ฿${(diff / 2).toLocaleString()}`
     : diff < 0
-    ? `Gun owes Cartune ฿${(Math.abs(diff) / 2).toLocaleString()}`
+    ? `${gunName} owes ${cartuneName} ฿${(Math.abs(diff) / 2).toLocaleString()}`
     : 'All expenses balanced equally'
 
   return (
@@ -93,7 +96,7 @@ export default function FinanceView() {
           {/* Paid Split Bars */}
           <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-white/15">
             <div>
-              <div className="text-xs text-rose-200/90 font-semibold">Cartune Paid</div>
+              <div className="text-xs text-rose-200/90 font-semibold">{cartuneName} Paid</div>
               <div className="text-base font-bold mt-0.5">
                 ฿ {finance.cartunePaid.toLocaleString()}
               </div>
@@ -107,7 +110,7 @@ export default function FinanceView() {
             </div>
 
             <div>
-              <div className="text-xs text-rose-200/90 font-semibold">Gun Paid</div>
+              <div className="text-xs text-rose-200/90 font-semibold">{gunName} Paid</div>
               <div className="text-base font-bold mt-0.5">
                 ฿ {finance.gunPaid.toLocaleString()}
               </div>
@@ -126,7 +129,7 @@ export default function FinanceView() {
             <div className="bg-white/15 backdrop-blur-md rounded-2xl p-3 border border-white/15">
               <div className="flex items-center gap-1 text-[11px] text-rose-100 font-medium">
                 <Clock size={11} />
-                <span>Cartune Pending</span>
+                <span>{cartuneName} Pending</span>
               </div>
               <div className="text-base font-extrabold mt-0.5">
                 ฿ {finance.cartunePending.toLocaleString()}
@@ -139,7 +142,7 @@ export default function FinanceView() {
             <div className="bg-white/15 backdrop-blur-md rounded-2xl p-3 border border-white/15">
               <div className="flex items-center gap-1 text-[11px] text-rose-100 font-medium">
                 <Clock size={11} />
-                <span>Gun Pending</span>
+                <span>{gunName} Pending</span>
               </div>
               <div className="text-base font-extrabold mt-0.5">
                 ฿ {finance.gunPending.toLocaleString()}
@@ -320,8 +323,8 @@ export default function FinanceView() {
                     onChange={(e) => setPayer(e.target.value)}
                     className="w-full mt-1 px-2.5 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-bold focus:outline-none"
                   >
-                    <option value="Cartune">Cartune</option>
-                    <option value="Gun">Gun</option>
+                    <option value={cartuneName}>{cartuneName}</option>
+                    <option value={gunName}>{gunName}</option>
                   </select>
                 </div>
 

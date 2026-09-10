@@ -346,14 +346,6 @@ export default function ProfileView() {
             </div>
           </div>
         </div>
-
-        <button
-          onClick={() => switchUser()}
-          className="mt-3 w-full py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-98"
-        >
-          <ArrowLeftRight size={13} />
-          <span>สลับมุมมองไปที่ {partnerUser.name}</span>
-        </button>
       </div>
 
       {/* GITHUB CLOUD DATA VAULT (AURA-STYLE SYNC) */}

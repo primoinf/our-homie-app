@@ -3,7 +3,9 @@ import { useApp } from '../../context/AppContext'
 import { Calendar as CalendarIcon, LayoutGrid, List, Smile, ChevronLeft, ChevronRight, Plus, Check, Clock, CheckSquare, Trash2 } from 'lucide-react'
 
 export default function CalendarView() {
-  const { state, activeUser, partnerUser, switchUser, logMood, addCalendarEvent, toggleCalendarItem, deleteCalendarItem } = useApp()
+  const { state, activeUser, partnerUser, logMood, addCalendarEvent, toggleCalendarItem, deleteCalendarItem } = useApp()
+  const cartuneUser = state?.users?.cartune || { name: 'Cartune', avatar: '👩🏻' }
+  const gunUser = state?.users?.gun || { name: 'Gun', avatar: '👦🏻' }
   const [activeSubTab, setActiveSubTab] = useState('mood') // default to 'mood' or 'month'
   const [filterType, setFilterType] = useState('all') // 'all', 'shared', 'personal'
   const [selectedDay, setSelectedDay] = useState(10)
@@ -205,25 +207,19 @@ export default function CalendarView() {
             </div>
 
             {/* Current Logger Perspective Bar */}
-            <div className="flex items-center justify-between bg-stone-50/80 px-3 py-1.5 rounded-2xl border border-stone-200/60 mb-3">
+            <div className="flex items-center justify-between bg-stone-50/80 px-3.5 py-2 rounded-2xl border border-stone-200/60 mb-3">
               <div className="flex items-center gap-2 text-xs">
                 <span className="text-stone-400 font-medium">บันทึกสำหรับ:</span>
-                <span className="font-extrabold text-stone-800 flex items-center gap-1">
-                  <span>{activeUser.avatar}</span>
+                <span className="font-extrabold text-stone-800 flex items-center gap-1.5">
+                  <span className="text-base">{activeUser.avatar}</span>
                   <span>{activeUser.name}</span>
-                  <span className="text-[10px] text-[#8e1c24] font-bold">(ฉัน)</span>
+                  <span className="text-[10px] text-[#8e1c24] font-bold bg-[#8e1c24]/10 px-2 py-0.5 rounded-full">ฉัน</span>
                 </span>
               </div>
 
-              <button
-                type="button"
-                onClick={() => switchUser(state.currentUser === 'cartune' ? 'gun' : 'cartune')}
-                className="text-[11px] font-bold text-stone-500 hover:text-stone-900 flex items-center gap-1 cursor-pointer"
-                title="สลับไปบันทึกให้อีกคน"
-              >
-                <span>สลับเป็น {partnerUser.avatar} {partnerUser.name}</span>
-                <span className="text-[10px] text-[#8e1c24]">⇄</span>
-              </button>
+              <span className="text-[11px] text-stone-400 font-medium">
+                {activeUserMood ? 'บันทึกแล้ว ✨' : 'ยังไม่ได้บันทึก'}
+              </span>
             </div>
 
             {/* 5 Mood Emoji Buttons */}
@@ -258,34 +254,31 @@ export default function CalendarView() {
                   สถานะอารมณ์ทั้งสองคน (Sep {selectedDay})
                 </span>
                 <span className="text-[10px] text-stone-400 font-medium">
-                  {cartuneMood && gunMood ? 'บันทึกครบทั้งคู่แล้ว 💕' : 'แตะการ์ดเพื่อสลับคน'}
+                  {cartuneMood && gunMood ? 'บันทึกครบทั้งคู่แล้ว 💕' : 'อารมณ์ประจำวัน'}
                 </span>
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 {/* Cartune Card */}
                 <div
-                  onClick={() => {
-                    if (state.currentUser !== 'cartune') switchUser('cartune')
-                  }}
-                  className={`p-3 rounded-2xl border transition-all cursor-pointer ${
+                  className={`p-3 rounded-2xl border transition-all ${
                     state.currentUser === 'cartune'
                       ? 'bg-[#fffcfc] border-rose-200 shadow-2xs ring-1 ring-[#8e1c24]/20'
-                      : 'bg-white border-stone-200/80 hover:border-stone-300'
+                      : 'bg-white border-stone-200/80'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-base">👩🏻</span>
-                      <span className="text-xs font-bold text-stone-900">Cartune</span>
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="text-base">{cartuneUser.avatar || '👩🏻'}</span>
+                      <span className="text-xs font-bold text-stone-900 truncate">{cartuneUser.name}</span>
                     </div>
                     {state.currentUser === 'cartune' ? (
-                      <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-full bg-[#8e1c24] text-white">
+                      <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-full bg-[#8e1c24] text-white shrink-0">
                         ฉัน
                       </span>
                     ) : (
-                      <span className="text-[9px] text-stone-400 font-medium">
-                        แตะเพื่อเลือก
+                      <span className="text-[9px] text-stone-500 font-medium bg-stone-100 px-1.5 py-0.5 rounded-full shrink-0">
+                        แฟน
                       </span>
                     )}
                   </div>
@@ -302,7 +295,7 @@ export default function CalendarView() {
                         <div className="text-xs font-extrabold text-stone-900 capitalize truncate">
                           {cartuneMood.label || cartuneMood.mood}
                         </div>
-                        <div className="text-[10px] text-stone-500 font-medium">
+                        <div className="text-[10px] text-stone-500 font-medium truncate">
                           รู้สึก{cartuneMood.label || cartuneMood.mood}
                         </div>
                       </div>
@@ -310,8 +303,10 @@ export default function CalendarView() {
                   ) : (
                     <div className="py-2.5 px-2 bg-stone-50 rounded-xl text-center border border-dashed border-stone-200">
                       <p className="text-[11px] text-stone-400 font-medium">ยังไม่บันทึก</p>
-                      {state.currentUser === 'cartune' && (
+                      {state.currentUser === 'cartune' ? (
                         <p className="text-[10px] text-[#8e1c24] font-bold mt-0.5">เลือก emoji ด้านบน</p>
+                      ) : (
+                        <p className="text-[10px] text-stone-400 mt-0.5">รอ{cartuneUser.name}บันทึก</p>
                       )}
                     </div>
                   )}
@@ -319,27 +314,24 @@ export default function CalendarView() {
 
                 {/* Gun Card */}
                 <div
-                  onClick={() => {
-                    if (state.currentUser !== 'gun') switchUser('gun')
-                  }}
-                  className={`p-3 rounded-2xl border transition-all cursor-pointer ${
+                  className={`p-3 rounded-2xl border transition-all ${
                     state.currentUser === 'gun'
                       ? 'bg-[#f8fafc] border-slate-300 shadow-2xs ring-1 ring-slate-700/20'
-                      : 'bg-white border-stone-200/80 hover:border-stone-300'
+                      : 'bg-white border-stone-200/80'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-base">👦🏻</span>
-                      <span className="text-xs font-bold text-stone-900">Gun</span>
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="text-base">{gunUser.avatar || '👦🏻'}</span>
+                      <span className="text-xs font-bold text-stone-900 truncate">{gunUser.name}</span>
                     </div>
                     {state.currentUser === 'gun' ? (
-                      <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-full bg-slate-800 text-white">
+                      <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-full bg-slate-800 text-white shrink-0">
                         ฉัน
                       </span>
                     ) : (
-                      <span className="text-[9px] text-stone-400 font-medium">
-                        แตะเพื่อเลือก
+                      <span className="text-[9px] text-stone-500 font-medium bg-stone-100 px-1.5 py-0.5 rounded-full shrink-0">
+                        แฟน
                       </span>
                     )}
                   </div>
@@ -356,7 +348,7 @@ export default function CalendarView() {
                         <div className="text-xs font-extrabold text-stone-900 capitalize truncate">
                           {gunMood.label || gunMood.mood}
                         </div>
-                        <div className="text-[10px] text-stone-500 font-medium">
+                        <div className="text-[10px] text-stone-500 font-medium truncate">
                           รู้สึก{gunMood.label || gunMood.mood}
                         </div>
                       </div>
@@ -364,8 +356,10 @@ export default function CalendarView() {
                   ) : (
                     <div className="py-2.5 px-2 bg-stone-50 rounded-xl text-center border border-dashed border-stone-200">
                       <p className="text-[11px] text-stone-400 font-medium">ยังไม่บันทึก</p>
-                      {state.currentUser === 'gun' && (
-                        <p className="text-[10px] text-slate-800 font-bold mt-0.5">เลือก emoji ด้านบน</p>
+                      {state.currentUser === 'gun' ? (
+                        <p className="text-[10px] text-[#8e1c24] font-bold mt-0.5">เลือก emoji ด้านบน</p>
+                      ) : (
+                        <p className="text-[10px] text-stone-400 mt-0.5">รอ{gunUser.name}บันทึก</p>
                       )}
                     </div>
                   )}
@@ -484,7 +478,7 @@ export default function CalendarView() {
             <div className="mt-3 pt-3 border-t border-stone-100 flex flex-wrap items-center justify-between gap-2 text-[11px] text-stone-500">
               <div className="flex items-center gap-1.5 font-medium">
                 <span className="inline-block w-3.5 h-3.5 rounded-md border border-stone-200" style={{ background: 'linear-gradient(135deg, #f472b6 50%, #a78bfa 50%)' }}></span>
-                <span>2 สี = บันทึกทั้ง 👩🏻 Cartune & 👦🏻 Gun</span>
+                <span>2 สี = บันทึกทั้ง {cartuneUser.avatar || '👩🏻'} {cartuneUser.name} & {gunUser.avatar || '👦🏻'} {gunUser.name}</span>
               </div>
               <div className="flex items-center gap-2">
                 {moodsList.map(m => (
@@ -528,8 +522,8 @@ export default function CalendarView() {
                       <div className="flex items-center gap-2 text-xs">
                         {cartune && (
                           <div className="flex items-center gap-1">
-                            <span>👩🏻</span>
-                            <span className="font-bold text-stone-800">Cartune:</span>
+                            <span>{cartuneUser.avatar || '👩🏻'}</span>
+                            <span className="font-bold text-stone-800">{cartuneUser.name}:</span>
                             <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold text-white shadow-2xs" style={{ backgroundColor: moodColors[cartune.mood] || '#f472b6' }}>
                               {cartune.icon || moodsList.find(m => m.key === cartune.mood)?.emoji} {cartune.label || cartune.mood}
                             </span>
@@ -538,8 +532,8 @@ export default function CalendarView() {
                         {cartune && gun && <span className="text-stone-300">•</span>}
                         {gun && (
                           <div className="flex items-center gap-1">
-                            <span>👦🏻</span>
-                            <span className="font-bold text-stone-800">Gun:</span>
+                            <span>{gunUser.avatar || '👦🏻'}</span>
+                            <span className="font-bold text-stone-800">{gunUser.name}:</span>
                             <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold text-white shadow-2xs" style={{ backgroundColor: moodColors[gun.mood] || '#a78bfa' }}>
                               {gun.icon || moodsList.find(m => m.key === gun.mood)?.emoji} {gun.label || gun.mood}
                             </span>
