@@ -658,7 +658,7 @@ export default function CalendarView() {
                             : 'bg-white border-stone-200/80 hover:border-stone-300 shadow-2xs'
                         }`}
                       >
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
                           {isTask ? (
                             <button
                               type="button"
@@ -678,36 +678,36 @@ export default function CalendarView() {
                             </div>
                           )}
 
-                          <div>
+                          <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-1.5">
-                              <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md leading-none ${
+                              <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md leading-none shrink-0 ${
                                 isTask ? 'bg-teal-50 text-teal-700 border border-teal-200/60' : 'bg-rose-50 text-[#8e1c24] border border-rose-200/60'
                               }`}>
                                 {isTask ? 'Task' : 'Event'}
                               </span>
-                              <span className={`text-sm font-extrabold ${isTask && ev.completed ? 'line-through text-stone-400' : 'text-stone-900'}`}>
+                              <span className={`text-sm font-extrabold truncate ${isTask && ev.completed ? 'line-through text-stone-400' : 'text-stone-900'}`}>
                                 {ev.title}
                               </span>
                             </div>
 
-                            <div className="flex items-center gap-2 text-xs text-stone-500 font-medium mt-0.5">
+                            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-stone-500 font-medium mt-0.5">
                               {ev.time ? (
-                                <span className="font-bold text-stone-700 bg-stone-100 px-1.5 py-0.5 rounded-md text-[11px] flex items-center gap-1">
+                                <span className="font-bold text-stone-700 bg-stone-100 px-1.5 py-0.5 rounded-md text-[11px] flex items-center gap-1 shrink-0">
                                   <Clock size={11} className="text-stone-400" />
                                   <span>{ev.time} น.</span>
                                 </span>
                               ) : (
-                                <span className="text-stone-400">{isTask ? 'Due today' : 'All day'}</span>
+                                <span className="text-stone-400 shrink-0">{isTask ? 'Due today' : 'All day'}</span>
                               )}
-                              <span className="capitalize text-stone-400">• {ev.type}</span>
+                              <span className="capitalize text-stone-400 shrink-0">• {ev.type}</span>
                               {isTask && ev.completed && (
-                                <span className="text-teal-600 font-bold text-[10px] bg-teal-50 px-1.5 py-0.5 rounded">✓ ทำแล้ว</span>
+                                <span className="text-teal-600 font-bold text-[10px] bg-teal-50 px-1.5 py-0.5 rounded shrink-0">✓ ทำแล้ว</span>
                               )}
                             </div>
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-1.5 shrink-0">
+                        <div className="flex items-center gap-1.5 shrink-0 ml-2">
                           <span className={`w-2.5 h-2.5 rounded-full ${ev.type === 'shared' ? 'bg-[#8e1c24]' : 'bg-blue-500'}`}></span>
                           <button
                             type="button"
@@ -749,7 +749,7 @@ export default function CalendarView() {
               const isTask = ev.kind === 'task'
               return (
                 <div key={ev.id} className="p-3 bg-stone-50 rounded-2xl flex items-center justify-between border border-stone-100 hover:border-stone-200 transition-all">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
                     {isTask ? (
                       <button
                         type="button"
@@ -770,35 +770,35 @@ export default function CalendarView() {
                       </div>
                     )}
 
-                    <div>
+                    <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5">
-                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md leading-none ${
+                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md leading-none shrink-0 ${
                           isTask ? 'bg-teal-50 text-teal-700 border border-teal-200/60' : 'bg-rose-50 text-[#8e1c24] border border-rose-200/60'
                         }`}>
                           {isTask ? 'Task' : 'Event'}
                         </span>
-                        <span className={`text-sm font-extrabold ${isTask && ev.completed ? 'line-through text-stone-400' : 'text-stone-900'}`}>
+                        <span className={`text-sm font-extrabold truncate ${isTask && ev.completed ? 'line-through text-stone-400' : 'text-stone-900'}`}>
                           {ev.title}
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-2 text-xs text-stone-400 mt-0.5">
-                        <span className="font-semibold text-stone-600">Sep {ev.day}</span>
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-stone-400 mt-0.5">
+                        <span className="font-semibold text-stone-600 shrink-0">Sep {ev.day}</span>
                         {ev.time && (
-                          <span className="font-bold text-stone-700 bg-stone-200/70 px-1.5 py-0.5 rounded-md text-[11px] flex items-center gap-1">
+                          <span className="font-bold text-stone-700 bg-stone-200/70 px-1.5 py-0.5 rounded-md text-[11px] flex items-center gap-1 shrink-0">
                             <Clock size={11} className="text-stone-500" />
                             <span>{ev.time} น.</span>
                           </span>
                         )}
-                        <span className="capitalize">{ev.type}</span>
+                        <span className="capitalize shrink-0">• {ev.type}</span>
                         {isTask && ev.completed && (
-                          <span className="text-teal-600 font-bold text-[10px] bg-teal-50 px-1.5 py-0.5 rounded">✓ ทำแล้ว</span>
+                          <span className="text-teal-600 font-bold text-[10px] bg-teal-50 px-1.5 py-0.5 rounded shrink-0">✓ ทำแล้ว</span>
                         )}
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-1.5 shrink-0">
+                  <div className="flex items-center gap-1.5 shrink-0 ml-2">
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${ev.type === 'shared' ? 'bg-rose-50 text-[#8e1c24]' : 'bg-blue-50 text-blue-600'}`}>
                       {ev.type}
                     </span>
@@ -904,22 +904,31 @@ export default function CalendarView() {
                   />
 
                   {/* Quick Time Presets */}
-                  <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                    <span className="text-[10px] text-stone-400 font-medium mr-0.5 shrink-0">ทางลัด:</span>
-                    {['09:00', '12:00', '14:30', '18:00', '20:00'].map(t => (
-                      <button
-                        key={t}
-                        type="button"
-                        onClick={() => setNewEventTime(t)}
-                        className={`text-[11px] font-bold px-2 py-0.5 rounded-lg border transition-all cursor-pointer shrink-0 ${
-                          newEventTime === t
-                            ? 'bg-[#8e1c24] text-white border-[#8e1c24]'
-                            : 'bg-stone-50 text-stone-600 border-stone-200/80 hover:bg-stone-100'
-                        }`}
-                      >
-                        {t}
-                      </button>
-                    ))}
+                  <div className="pt-0.5">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-[11px] font-bold text-stone-400">ทางลัดเวลา:</span>
+                      {newEventTime && (
+                        <span className="text-[11px] font-bold text-[#8e1c24]">
+                          {newEventTime} น.
+                        </span>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-5 gap-1.5">
+                      {['09:00', '12:00', '14:30', '18:00', '20:00'].map(t => (
+                        <button
+                          key={t}
+                          type="button"
+                          onClick={() => setNewEventTime(t)}
+                          className={`py-1.5 text-[11px] font-bold rounded-xl border transition-all cursor-pointer text-center ${
+                            newEventTime === t
+                              ? 'bg-[#8e1c24] text-white border-[#8e1c24] shadow-xs'
+                              : 'bg-stone-50 text-stone-600 border-stone-200/80 hover:bg-stone-100'
+                          }`}
+                        >
+                          {t}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>

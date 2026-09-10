@@ -87,10 +87,10 @@ export default function ShoppingView() {
             >
               <div
                 onClick={() => toggleShoppingItem(item.id)}
-                className="flex items-center gap-3 cursor-pointer flex-1"
+                className="flex items-center gap-3 cursor-pointer flex-1 min-w-0 mr-2"
               >
                 <div
-                  className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-all ${
+                  className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-all shrink-0 ${
                     item.completed
                       ? 'bg-[#8e1c24] border-[#8e1c24] text-white'
                       : 'border-stone-300 bg-white group-hover:border-stone-400'
@@ -99,16 +99,16 @@ export default function ShoppingView() {
                   {item.completed && <Check size={13} strokeWidth={3} />}
                 </div>
 
-                <div className="flex flex-col">
+                <div className="flex flex-col min-w-0 flex-1">
                   <span
-                    className={`text-sm font-medium ${
+                    className={`text-sm font-medium break-words ${
                       item.completed ? 'line-through text-stone-400' : 'text-stone-800'
                     }`}
                   >
                     {item.text}
                   </span>
                   {item.addedBy && (
-                    <span className="text-[10px] text-stone-400">
+                    <span className="text-[10px] text-stone-400 truncate">
                       by {item.addedBy}
                     </span>
                   )}
