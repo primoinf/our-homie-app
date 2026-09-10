@@ -71,15 +71,7 @@
       "notes": "ชอบใส่ผ้าพันคอ ขี้อ้อน ชอบนอนบนตัก"
     }
   ],
-  "shopping": [
-    {
-      "id": "s_1789070880692",
-      "text": "น้ำ",
-      "category": "Home",
-      "completed": false,
-      "addedBy": "ตูบศักดิ์"
-    }
-  ],
+  "shopping": [],
   "finance": {
     "monthName": "September 2026",
     "totalSpending": 0,
@@ -149,5 +141,7 @@
     ],
     "moods": {}
   },
-  "deletedIds": []
+  "deletedIds": [
+    "s_1789070880692"
+  ]
 }
