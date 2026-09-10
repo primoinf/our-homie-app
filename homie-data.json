@@ -133,7 +133,20 @@
     "year": 2026,
     "month": 9,
     "selectedDay": 10,
-    "events": [],
+    "events": [
+      {
+        "id": "e_1789073826769",
+        "title": "ไปเมือง",
+        "date": "2026-09-10",
+        "day": 10,
+        "time": "18:00",
+        "type": "personal",
+        "kind": "event",
+        "completed": false,
+        "color": "#38bdf8",
+        "user": "gun"
+      }
+    ],
     "moods": {}
   }
 }
