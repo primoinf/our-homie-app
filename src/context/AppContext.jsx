@@ -8,7 +8,7 @@ const GITHUB_SETTINGS_KEY = 'our_homie_github_settings_v1'
 
 const DEFAULT_GH_SETTINGS = {
   username: 'primoinf',
-  repo: 'aura-workout-economy',
+  repo: 'our-homie-app',
   branch: 'main',
   filePath: 'homie-data.json',
   token: '',
@@ -47,13 +47,13 @@ export function AppProvider({ children }) {
   const [syncStatus, setSyncStatus] = useState('idle') // 'idle' | 'syncing' | 'synced' | 'error'
   const [syncError, setSyncError] = useState(null)
 
-  // Auth state: default to true for direct previewing, can toggle to view AuthView
+  // Auth state: default to false on new devices so user selects their profile once
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     try {
       const savedAuth = localStorage.getItem(AUTH_KEY)
-      return savedAuth !== null ? JSON.parse(savedAuth) : true
+      return savedAuth !== null ? JSON.parse(savedAuth) : false
     } catch (e) {
-      return true
+      return false
     }
   })
 

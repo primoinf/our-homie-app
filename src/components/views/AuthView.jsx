@@ -139,23 +139,34 @@ export default function AuthView() {
           Forgot password?
         </a>
 
-        {/* Quick Demo Access Buttons */}
+        {/* Quick Profile Selection */}
         <div className="mt-8 pt-5 border-t border-stone-200/60 w-full max-w-xs">
-          <p className="text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-2">
-            Quick One-Click Demo
+          <p className="text-[11px] font-bold text-stone-500 uppercase tracking-wider mb-1">
+            เลือกโปรไฟล์ของคุณเพื่อเข้าใช้งาน
           </p>
-          <div className="flex gap-2">
+          <p className="text-[10px] text-stone-400 mb-3">
+            (เลือกครั้งเดียว เครื่องนี้จะจำโปรไฟล์ของคุณตลอดไป)
+          </p>
+          <div className="flex flex-col gap-2">
             <button
               onClick={() => login('cartune')}
-              className="flex-1 py-2 px-3 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-xl text-xs font-bold text-rose-800 flex items-center justify-center gap-1.5 active:scale-95 transition-all"
+              className="w-full py-3 px-4 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-2xl text-xs font-bold text-rose-800 flex items-center justify-between shadow-2xs active:scale-98 transition-all cursor-pointer"
             >
-              <span>👩🏻</span> Cartune
+              <div className="flex items-center gap-2">
+                <span className="text-xl">👩🏻</span>
+                <span>เข้าใช้งานเป็น Cartune</span>
+              </div>
+              <span className="text-[11px] font-semibold text-rose-400">เข้าสู่ระบบ →</span>
             </button>
             <button
               onClick={() => login('gun')}
-              className="flex-1 py-2 px-3 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-xl text-xs font-bold text-slate-800 flex items-center justify-center gap-1.5 active:scale-95 transition-all"
+              className="w-full py-3 px-4 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-2xl text-xs font-bold text-slate-800 flex items-center justify-between shadow-2xs active:scale-98 transition-all cursor-pointer"
             >
-              <span>👦🏻</span> Gun
+              <div className="flex items-center gap-2">
+                <span className="text-xl">👦🏻</span>
+                <span>เข้าใช้งานเป็น Gun</span>
+              </div>
+              <span className="text-[11px] font-semibold text-slate-400">เข้าสู่ระบบ →</span>
             </button>
           </div>
         </div>

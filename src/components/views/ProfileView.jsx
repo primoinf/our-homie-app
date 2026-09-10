@@ -88,7 +88,7 @@ export default function ProfileView() {
 
   // GitHub Settings Form state
   const [ghUsername, setGhUsername] = useState(githubSettings.username || 'primoinf')
-  const [ghRepo, setGhRepo] = useState(githubSettings.repo || 'aura-workout-economy')
+  const [ghRepo, setGhRepo] = useState(githubSettings.repo || 'our-homie-app')
   const [ghBranch, setGhBranch] = useState(githubSettings.branch || 'main')
   const [ghFilePath, setGhFilePath] = useState(githubSettings.filePath || 'homie-data.json')
   const [ghToken, setGhToken] = useState(githubSettings.token || '')
@@ -264,28 +264,28 @@ export default function ProfileView() {
         <div className="grid grid-cols-2 gap-2.5">
           {/* Cartune Card */}
           <div
-            onClick={() => switchUser('cartune')}
-            className={`p-3 rounded-2xl border transition-all cursor-pointer relative group ${
+            className={`p-3 rounded-2xl border transition-all relative ${
               state.currentUser === 'cartune'
                 ? 'bg-[#fff5f6] border-[#8e1c24] ring-2 ring-[#8e1c24]/20 shadow-xs'
-                : 'bg-stone-50 border-stone-200/70 hover:bg-stone-100/70'
+                : 'bg-stone-50 border-stone-200/70'
             }`}
           >
             <div className="flex items-center justify-between">
               <span className="text-2xl">{cartuneUser.avatar || '👩🏻'}</span>
               
               <div className="flex items-center gap-1">
-                {state.currentUser === 'cartune' && (
+                {state.currentUser === 'cartune' ? (
                   <span className="text-[10px] font-bold px-1.5 py-0.5 bg-[#8e1c24] text-white rounded-full">
                     ฉัน
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-semibold px-1.5 py-0.5 bg-stone-200/90 text-stone-600 rounded-full">
+                    แฟน
                   </span>
                 )}
                 <button
                   type="button"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    openProfileModal('cartune')
-                  }}
+                  onClick={() => openProfileModal('cartune')}
                   className="w-6 h-6 rounded-full bg-white/90 hover:bg-white text-stone-600 flex items-center justify-center shadow-xs transition-transform active:scale-90"
                   title="แก้ไขข้อมูล Cartune"
                 >
@@ -306,28 +306,28 @@ export default function ProfileView() {
 
           {/* Gun Card */}
           <div
-            onClick={() => switchUser('gun')}
-            className={`p-3 rounded-2xl border transition-all cursor-pointer relative group ${
+            className={`p-3 rounded-2xl border transition-all relative ${
               state.currentUser === 'gun'
                 ? 'bg-stone-100 border-stone-900 ring-2 ring-stone-900/20 shadow-xs'
-                : 'bg-stone-50 border-stone-200/70 hover:bg-stone-100/70'
+                : 'bg-stone-50 border-stone-200/70'
             }`}
           >
             <div className="flex items-center justify-between">
               <span className="text-2xl">{gunUser.avatar || '👦🏻'}</span>
 
               <div className="flex items-center gap-1">
-                {state.currentUser === 'gun' && (
+                {state.currentUser === 'gun' ? (
                   <span className="text-[10px] font-bold px-1.5 py-0.5 bg-stone-900 text-white rounded-full">
                     ฉัน
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-semibold px-1.5 py-0.5 bg-stone-200/90 text-stone-600 rounded-full">
+                    แฟน
                   </span>
                 )}
                 <button
                   type="button"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    openProfileModal('gun')
-                  }}
+                  onClick={() => openProfileModal('gun')}
                   className="w-6 h-6 rounded-full bg-white/90 hover:bg-white text-stone-600 flex items-center justify-center shadow-xs transition-transform active:scale-90"
                   title="แก้ไขข้อมูล Gun"
                 >
