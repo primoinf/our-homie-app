@@ -4,6 +4,8 @@ import { ShoppingCart, LayoutGrid, Utensils, Home, Cross, PawPrint, Check, Plus,
 
 export default function ShoppingView() {
   const { state, toggleShoppingItem, addShoppingItem, deleteShoppingItem } = useApp()
+  const cartuneName = state.users?.cartune?.name || 'มะแอ๊ะ'
+  const gunName = state.users?.gun?.name || 'ตูบศักดิ์'
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [newItemText, setNewItemText] = useState('')
   const [isAdding, setIsAdding] = useState(false)
@@ -43,7 +45,7 @@ export default function ShoppingView() {
             </h1>
           </div>
           <p className="text-xs text-stone-400 font-medium mt-0.5">
-            Added by Cartune & Gun
+            Added by {cartuneName} & {gunName}
           </p>
         </div>
       </div>

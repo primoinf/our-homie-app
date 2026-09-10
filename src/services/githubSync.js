@@ -151,7 +151,7 @@ export async function commitDataToGitHub({ username, repo, token, branch = DEFAU
   }
 }
 
-// Helper: Union two arrays by id
+// Helper: Union two arrays by id with LWW (Last-Write-Wins) timestamp support
 function unionById(arr1 = [], arr2 = []) {
   const map = new Map()
   // Add first array items
@@ -162,9 +162,17 @@ function unionById(arr1 = [], arr2 = []) {
   arr2.forEach(item => {
     if (item && item.id) {
       if (map.has(item.id)) {
-        // Merge objects, preferring item with completed = true or updated props
         const existing = map.get(item.id)
-        map.set(item.id, { ...existing, ...item, completed: existing.completed || item.completed })
+        const itemUpdated = item.updatedAt || item.createdAt || 0
+        const existingUpdated = existing.updatedAt || existing.createdAt || 0
+        if (itemUpdated > existingUpdated) {
+          map.set(item.id, { ...existing, ...item })
+        } else if (existingUpdated > itemUpdated) {
+          map.set(item.id, { ...item, ...existing })
+        } else {
+          // Fallback if timestamps identical or absent
+          map.set(item.id, { ...existing, ...item, completed: existing.completed || item.completed })
+        }
       } else {
         map.set(item.id, item)
       }
@@ -173,17 +181,28 @@ function unionById(arr1 = [], arr2 = []) {
   return Array.from(map.values())
 }
 
-// Conflict-free union merge of local and remote states
+// Conflict-free union merge of local and remote states with Tombstone deletion support
 export function mergeStates(local, remote) {
   if (!remote) return local
 
   const merged = { ...local }
 
-  // 1. Shopping: Union by item.id
-  merged.shopping = unionById(local.shopping || [], remote.shopping || [])
+  // 0. Tombstones: Merge deletedIds from both local and remote
+  const rawDeleted = [
+    ...(Array.isArray(local.deletedIds) ? local.deletedIds : []),
+    ...(Array.isArray(remote.deletedIds) ? remote.deletedIds : [])
+  ]
+  const mergedDeletedIds = Array.from(new Set(rawDeleted)).slice(-1000)
+  const deletedSet = new Set(mergedDeletedIds)
+  merged.deletedIds = mergedDeletedIds
 
-  // 2. Calendar Events: Union by event.id
+  // 1. Shopping: Union by item.id and filter out deleted items
+  merged.shopping = unionById(local.shopping || [], remote.shopping || [])
+    .filter(item => item && item.id && !deletedSet.has(item.id))
+
+  // 2. Calendar Events & Tasks: Union by event.id and filter out deleted items
   const mergedEvents = unionById(local.calendar?.events || [], remote.calendar?.events || [])
+    .filter(item => item && item.id && !deletedSet.has(item.id))
   
   // 3. Calendar Moods: Deep merge date keys
   const localMoods = local.calendar?.moods || {}
@@ -211,11 +230,13 @@ export function mergeStates(local, remote) {
     moods: mergedMoods
   }
 
-  // 4. Pets: Union by pet.id
+  // 4. Pets: Union by pet.id and filter out deleted pets
   merged.pets = unionById(local.pets || [], remote.pets || [])
+    .filter(item => item && item.id && !deletedSet.has(item.id))
 
   // 5. Finance Transactions & Auto-recalculation of totals
   const mergedTransactions = unionById(local.finance?.transactions || [], remote.finance?.transactions || [])
+    .filter(item => item && item.id && !deletedSet.has(item.id))
     .sort((a, b) => (b.id || '').localeCompare(a.id || ''))
 
   // Recalculate spending math accurately from merged transactions
@@ -257,6 +278,7 @@ export function mergeStates(local, remote) {
   const localHistory = local.awards?.history || []
   const remoteHistory = remote.awards?.history || []
   const mergedHistory = unionById(localHistory, remoteHistory)
+    .filter(item => item && item.id && !deletedSet.has(item.id))
     .sort((a, b) => (b.id || '').localeCompare(a.id || ''))
 
   merged.awards = {
@@ -315,10 +337,32 @@ export async function syncWithGitHub({ localState, settings, mode = 'sync' }) {
     if (!remoteState) {
       return { success: false, error: 'ไม่พบข้อมูลบน GitHub สำหรับดึงลงมา (File does not exist yet)' }
     }
+    const rawDeleted = [
+      ...(Array.isArray(localState.deletedIds) ? localState.deletedIds : []),
+      ...(Array.isArray(remoteState.deletedIds) ? remoteState.deletedIds : [])
+    ]
+    const mergedDeletedIds = Array.from(new Set(rawDeleted)).slice(-1000)
+    const deletedSet = new Set(mergedDeletedIds)
+
     stateToSave = {
       ...remoteState,
+      deletedIds: mergedDeletedIds,
+      shopping: (remoteState.shopping || []).filter(item => item && item.id && !deletedSet.has(item.id)),
+      pets: (remoteState.pets || []).filter(item => item && item.id && !deletedSet.has(item.id)),
       currentUser: localState.currentUser,
       githubSettings: settings
+    }
+    if (remoteState.calendar) {
+      stateToSave.calendar = {
+        ...remoteState.calendar,
+        events: (remoteState.calendar.events || []).filter(item => item && item.id && !deletedSet.has(item.id))
+      }
+    }
+    if (remoteState.finance) {
+      stateToSave.finance = {
+        ...remoteState.finance,
+        transactions: (remoteState.finance.transactions || []).filter(item => item && item.id && !deletedSet.has(item.id))
+      }
     }
     return { 
       success: true, 

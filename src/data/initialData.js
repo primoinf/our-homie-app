@@ -25,6 +25,7 @@ export const MOCK_DATA = {
   },
 
   currentUser: 'cartune',
+  deletedIds: [],
 
   awards: {
     points: 0,
@@ -258,7 +259,9 @@ export const CLEAN_DATA = {
     selectedDay: 10,
     events: [],
     moods: {}
-  }
+  },
+
+  deletedIds: []
 }
 
 // Default to CLEAN_DATA for fresh real usage

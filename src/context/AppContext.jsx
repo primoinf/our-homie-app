@@ -24,7 +24,12 @@ export function AppProvider({ children }) {
     try {
       const saved = localStorage.getItem(STORAGE_KEY)
       if (saved) {
-        return JSON.parse(saved)
+        const parsed = JSON.parse(saved)
+        return {
+          ...CLEAN_DATA,
+          ...parsed,
+          deletedIds: parsed.deletedIds || []
+        }
       }
     } catch (e) {
       console.warn('Failed to parse saved state:', e)
@@ -246,10 +251,11 @@ export function AppProvider({ children }) {
   // Shopping list actions
   const toggleShoppingItem = (id) => {
     setState(prev => {
+      const now = Date.now()
       const updated = prev.shopping.map(item => {
         if (item.id === id) {
           const nextCompleted = !item.completed
-          return { ...item, completed: nextCompleted }
+          return { ...item, completed: nextCompleted, updatedAt: now }
         }
         return item
       })
@@ -259,12 +265,15 @@ export function AppProvider({ children }) {
 
   const addShoppingItem = (text, category = 'Home') => {
     if (!text.trim()) return
+    const now = Date.now()
     const newItem = {
-      id: 's_' + Date.now(),
+      id: 's_' + now,
       text: text.trim(),
       category: category || 'Home',
       completed: false,
-      addedBy: state.users[state.currentUser]?.name || 'Cartune'
+      addedBy: state.users[state.currentUser]?.name || 'Cartune',
+      createdAt: now,
+      updatedAt: now
     }
     setState(prev => ({
       ...prev,
@@ -276,7 +285,8 @@ export function AppProvider({ children }) {
   const deleteShoppingItem = (itemId) => {
     setState(prev => ({
       ...prev,
-      shopping: prev.shopping.filter(i => i.id !== itemId)
+      shopping: (prev.shopping || []).filter(i => i.id !== itemId),
+      deletedIds: Array.from(new Set([...(prev.deletedIds || []), itemId])).slice(-500)
     }))
     showToast('ลบรายการซื้อของแล้ว 🗑️')
   }
@@ -341,11 +351,12 @@ export function AppProvider({ children }) {
 
   const deletePet = (petId) => {
     setState(prev => {
-      const pet = prev.pets.find(p => p.id === petId)
+      const pet = (prev.pets || []).find(p => p.id === petId)
       const name = pet ? pet.name : 'สัตว์เลี้ยง'
       return {
         ...prev,
-        pets: prev.pets.filter(p => p.id !== petId)
+        pets: (prev.pets || []).filter(p => p.id !== petId),
+        deletedIds: Array.from(new Set([...(prev.deletedIds || []), petId])).slice(-500)
       }
     })
     showToast('ลบข้อมูลสัตว์เลี้ยงแล้ว 🗑️')
@@ -363,15 +374,18 @@ export function AppProvider({ children }) {
     const numAmount = parseFloat(amount) || 0
     if (!title || numAmount <= 0) return
 
+    const now = Date.now()
     const newTx = {
-      id: 't_' + Date.now(),
+      id: 't_' + now,
       title,
       amount: numAmount,
       payer: payer || state.users[state.currentUser]?.name,
       date: 'Today',
       verified: true,
       category: category || 'Home Supplies',
-      icon: category === 'Food' ? 'Utensils' : category === 'Pets' ? 'PawPrint' : category === 'Utilities' ? 'Receipt' : 'Home'
+      icon: category === 'Food' ? 'Utensils' : category === 'Pets' ? 'PawPrint' : category === 'Utilities' ? 'Receipt' : 'Home',
+      createdAt: now,
+      updatedAt: now
     }
 
     setState(prev => {
@@ -432,7 +446,8 @@ export function AppProvider({ children }) {
           gunPaid: newGunPaid,
           budgets: updatedBudgets,
           transactions: updatedTransactions
-        }
+        },
+        deletedIds: Array.from(new Set([...(prev.deletedIds || []), txId])).slice(-500)
       }
     })
     showToast('ลบรายการค่าใช้จ่ายแล้ว 🗑️')
@@ -488,9 +503,10 @@ export function AppProvider({ children }) {
 
   const addCalendarEvent = ({ title, date, time = '', type = 'shared', kind = 'event' }) => {
     if (!title.trim()) return
+    const now = Date.now()
     const day = parseInt(date.split('-')[2], 10) || 5
     const newEv = {
-      id: (kind === 'task' ? 'tk_' : 'e_') + Date.now(),
+      id: (kind === 'task' ? 'tk_' : 'e_') + now,
       title: title.trim(),
       date,
       day,
@@ -499,7 +515,9 @@ export function AppProvider({ children }) {
       kind: kind || 'event',
       completed: false,
       color: type === 'shared' ? '#8e1c24' : '#38bdf8',
-      user: state.currentUser
+      user: state.currentUser,
+      createdAt: now,
+      updatedAt: now
     }
 
     setState(prev => ({
@@ -516,11 +534,12 @@ export function AppProvider({ children }) {
     setState(prev => {
       let toggledTitle = ''
       let willBeDone = false
+      const now = Date.now()
       const updated = prev.calendar.events.map(ev => {
         if (ev.id === itemId) {
           toggledTitle = ev.title
           willBeDone = !ev.completed
-          return { ...ev, completed: willBeDone }
+          return { ...ev, completed: willBeDone, updatedAt: now }
         }
         return ev
       })
@@ -539,15 +558,16 @@ export function AppProvider({ children }) {
 
   const deleteCalendarItem = (itemId) => {
     setState(prev => {
-      const item = prev.calendar.events.find(e => e.id === itemId)
+      const item = (prev.calendar?.events || []).find(e => e.id === itemId)
       const title = item ? item.title : 'รายการ'
-      const updated = prev.calendar.events.filter(e => e.id !== itemId)
+      const updated = (prev.calendar?.events || []).filter(e => e.id !== itemId)
       return {
         ...prev,
         calendar: {
           ...prev.calendar,
           events: updated
-        }
+        },
+        deletedIds: Array.from(new Set([...(prev.deletedIds || []), itemId])).slice(-500)
       }
     })
     showToast('ลบรายการแล้ว 🗑️')

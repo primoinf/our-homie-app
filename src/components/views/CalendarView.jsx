@@ -904,14 +904,14 @@ export default function CalendarView() {
                   />
 
                   {/* Quick Time Presets */}
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] text-stone-400 font-medium mr-1">ทางลัด:</span>
+                  <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                    <span className="text-[10px] text-stone-400 font-medium mr-0.5 shrink-0">ทางลัด:</span>
                     {['09:00', '12:00', '14:30', '18:00', '20:00'].map(t => (
                       <button
                         key={t}
                         type="button"
                         onClick={() => setNewEventTime(t)}
-                        className={`text-[11px] font-bold px-2 py-1 rounded-lg border transition-all cursor-pointer ${
+                        className={`text-[11px] font-bold px-2 py-0.5 rounded-lg border transition-all cursor-pointer shrink-0 ${
                           newEventTime === t
                             ? 'bg-[#8e1c24] text-white border-[#8e1c24]'
                             : 'bg-stone-50 text-stone-600 border-stone-200/80 hover:bg-stone-100'
