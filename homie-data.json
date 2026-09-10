@@ -2,23 +2,25 @@
   "users": {
     "cartune": {
       "id": "cartune",
-      "name": "Cartune",
+      "name": "มะแอ๊ะ",
       "email": "cartune@homie.app",
-      "avatar": "👩🏻",
-      "role": "Partner",
+      "avatar": "🐱",
+      "role": "ที่รัก",
       "accentColor": "#8e1c24",
       "badgeBg": "#fbe8ea",
-      "badgeText": "#8e1c24"
+      "badgeText": "#8e1c24",
+      "updatedAt": 1789072000000
     },
     "gun": {
       "id": "gun",
-      "name": "Gun",
+      "name": "ตูบศักดิ์",
       "email": "gun@homie.app",
-      "avatar": "👦🏻",
-      "role": "Partner",
+      "avatar": "🐶",
+      "role": "ที่รัก",
       "accentColor": "#1e293b",
       "badgeBg": "#e2e8f0",
-      "badgeText": "#1e293b"
+      "badgeText": "#1e293b",
+      "updatedAt": 1789072000000
     }
   },
   "currentUser": "gun",

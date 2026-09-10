@@ -267,16 +267,19 @@ export function mergeStates(local, remote) {
     history: mergedHistory
   }
 
-  // 7. Users: Merge profiles
-  merged.users = {
-    cartune: {
-      ...(local.users?.cartune || {}),
-      ...(remote.users?.cartune || {})
-    },
-    gun: {
-      ...(local.users?.gun || {}),
-      ...(remote.users?.gun || {})
+  // 7. Users: Merge profiles with timestamp LWW (Last-Write-Wins)
+  const mergeUser = (l = {}, r = {}) => {
+    const lTime = l.updatedAt || 0
+    const rTime = r.updatedAt || 0
+    if (rTime > lTime) {
+      return { ...l, ...r }
     }
+    return { ...r, ...l }
+  }
+
+  merged.users = {
+    cartune: mergeUser(local.users?.cartune, remote.users?.cartune),
+    gun: mergeUser(local.users?.gun, remote.users?.gun)
   }
 
   // 8. Always preserve local device identity and local GitHub credentials

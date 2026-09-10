@@ -197,7 +197,8 @@ export function AppProvider({ children }) {
       const currentUserObj = prev.users[userId] || {}
       const updatedUser = {
         ...currentUserObj,
-        ...updatedFields
+        ...updatedFields,
+        updatedAt: Date.now()
       }
       return {
         ...prev,
