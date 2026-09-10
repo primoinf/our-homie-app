@@ -1,0 +1,97 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Prompt', 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Prompt', 'Outfit', 'Plus Jakarta Sans', sans-serif;
+  
+  --color-brand-red: #8e1c24;
+  --color-brand-red-dark: #6b141a;
+  --color-brand-red-light: #ab2530;
+  --color-brand-cream: #fdfaf7;
+  --color-brand-bg: #faf8f7;
+  
+  --color-mood-happy: #f472b6;
+  --color-mood-calm: #a78bfa;
+  --color-mood-sad: #38bdf8;
+  --color-mood-angry: #fb923c;
+  --color-mood-tired: #f59e0b;
+}
+
+:root {
+  font-family: 'Prompt', 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+  letter-spacing: 0.02em;
+  line-height: 1.6;
+  font-weight: 350;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #faf8f7;
+  color: #2b1e1a;
+  overflow-x: hidden;
+  letter-spacing: 0.02em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Prompt Font Calibration: soften heavy bolding & prevent squeezed letters */
+.font-extrabold {
+  font-weight: 600 !important;
+  letter-spacing: 0.015em !important;
+}
+
+.font-bold {
+  font-weight: 500 !important;
+  letter-spacing: 0.015em !important;
+}
+
+.font-semibold {
+  font-weight: 450 !important;
+  letter-spacing: 0.018em !important;
+}
+
+.font-medium {
+  font-weight: 400 !important;
+  letter-spacing: 0.02em !important;
+}
+
+/* Neutralize tracking-tight which squeezes Thai vowel marks */
+.tracking-tight {
+  letter-spacing: 0.015em !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(142, 28, 36, 0.15);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(142, 28, 36, 0.3);
+}
+
+/* Subtle animation helpers */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.22s ease-out forwards;
+}
+
+/* Glassmorphism soft */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
