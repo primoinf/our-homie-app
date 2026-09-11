@@ -7,6 +7,7 @@ export default function CalendarView() {
   const cartuneUser = state?.users?.cartune || { name: 'Cartune', avatar: '👩🏻' }
   const gunUser = state?.users?.gun || { name: 'Gun', avatar: '👦🏻' }
   const [activeSubTab, setActiveSubTab] = useState('mood') // default to 'mood' or 'month'
+  const [filterType, setFilterType] = useState('all') // 'all', 'shared', 'personal'
   const [selectedDay, setSelectedDay] = useState(() => {
     const today = new Date().getDate()
     return (today >= 1 && today <= 30) ? today : 10
@@ -41,9 +42,10 @@ export default function CalendarView() {
   const selectedDateStr = formatDateKey(selectedDay)
   
   // Extract both Cartune and Gun's mood for selected date
-  const dayMoodEntry = state.calendar.moods[selectedDateStr] || 
-                       state.calendar.moods[`2026-09-0${selectedDay}`] || 
-                       state.calendar.moods[`2026-9-${selectedDay}`] || {}
+  const calendarMoods = state?.calendar?.moods || {}
+  const dayMoodEntry = calendarMoods[selectedDateStr] || 
+                       calendarMoods[`2026-09-0${selectedDay}`] || 
+                       calendarMoods[`2026-9-${selectedDay}`] || {}
 
   let cartuneMood = null
   let gunMood = null
@@ -64,7 +66,7 @@ export default function CalendarView() {
   const activeUserMood = state.currentUser === 'cartune' ? cartuneMood : gunMood
 
   // Collect recent mood entries for the RECENT feed
-  const recentMoodsList = Object.entries(state.calendar.moods || {})
+  const recentMoodsList = Object.entries(calendarMoods)
     .sort(([dateA], [dateB]) => dateB.localeCompare(dateA))
     .slice(0, 6)
     .map(([dateKey, entry]) => {
@@ -76,7 +78,9 @@ export default function CalendarView() {
     })
     .filter(item => item.cartune || item.gun)
 
-  const eventsForSelectedDay = state.calendar.events
+  const allCalendarEvents = state?.calendar?.events || []
+
+  const eventsForSelectedDay = allCalendarEvents
     .filter(e => {
       if (e.day !== selectedDay) return false
       if (filterType === 'shared') return e.type === 'shared'
@@ -86,7 +90,7 @@ export default function CalendarView() {
     .sort((a, b) => (a.time || '99:99').localeCompare(b.time || '99:99'))
 
   // Sort events by closest date first (ascending order), then by time
-  const sortedEvents = [...state.calendar.events]
+  const sortedEvents = [...allCalendarEvents]
     .filter(ev => {
       if (filterType === 'shared') return ev.type === 'shared'
       if (filterType === 'personal') return ev.type === 'personal'
@@ -410,9 +414,9 @@ export default function CalendarView() {
               {/* Day 1 to 30 */}
               {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30].map(day => {
                 const dateKey = formatDateKey(day)
-                const dayEntry = state.calendar.moods[dateKey] || 
-                                state.calendar.moods[`2026-09-0${day}`] || 
-                                state.calendar.moods[`2026-9-${day}`] || {}
+                const dayEntry = calendarMoods[dateKey] || 
+                                calendarMoods[`2026-09-0${day}`] || 
+                                calendarMoods[`2026-9-${day}`] || {}
                 
                 const c = dayEntry.cartune || (dayEntry.user === 'cartune' ? dayEntry : null)
                 const g = dayEntry.gun || (dayEntry.user === 'gun' ? dayEntry : null)
@@ -587,7 +591,7 @@ export default function CalendarView() {
 
               {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30].map(day => {
                 const isSelected = selectedDay === day
-                const dayEvents = state.calendar.events.filter(e => e.day === day)
+                const dayEvents = allCalendarEvents.filter(e => e.day === day)
                 const hasEvent = dayEvents.length > 0
                 const isShared = dayEvents.some(e => e.type === 'shared')
                 
