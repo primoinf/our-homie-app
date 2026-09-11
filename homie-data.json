@@ -63,10 +63,10 @@
       "id": "s_1789142165317",
       "text": "น้ำเปล่า",
       "category": "Food",
-      "completed": false,
+      "completed": true,
       "addedBy": "ตูบศักดิ์",
       "createdAt": 1789142165317,
-      "updatedAt": 1789142165317
+      "updatedAt": 1789142724761
     }
   ],
   "finance": {
@@ -170,11 +170,11 @@
         "time": "23:59",
         "type": "personal",
         "kind": "task",
-        "completed": false,
+        "completed": true,
         "color": "#38bdf8",
         "user": "gun",
         "createdAt": 1789142230817,
-        "updatedAt": 1789142230817
+        "updatedAt": 1789142720618
       }
     ],
     "moods": {}
