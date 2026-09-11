@@ -28,13 +28,31 @@ export default function FinanceView() {
     }
   }
 
+  const resolvePayerMember = (payerString) => {
+    const p = (payerString || '').toLowerCase().trim()
+    const cName = (state?.users?.cartune?.name || '').toLowerCase().trim()
+    const gName = (state?.users?.gun?.name || '').toLowerCase().trim()
+
+    // Check if matches Cartune
+    if (p === 'cartune' || (cName && p === cName) || p.includes('cartune') || (cName && p.includes(cName))) {
+      return state?.users?.cartune || { name: cartuneName, avatar: '🐱', role: 'Partner' }
+    }
+    // Check if matches Gun
+    if (p === 'gun' || (gName && p === gName) || p.includes('gun') || (gName && p.includes(gName))) {
+      return state?.users?.gun || { name: gunName, avatar: '🐶', role: 'Partner' }
+    }
+    return { name: payerString, avatar: '👤', role: 'Member' }
+  }
+
   const handleAddExpense = (e) => {
     e.preventDefault()
     if (!title.trim() || !amount) return
+    const isGun = payer === gunName || payer.toLowerCase().includes('gun') || payer.toLowerCase().includes(gunName.toLowerCase())
+    const selectedMember = isGun ? (state?.users?.gun || { name: gunName }) : (state?.users?.cartune || { name: cartuneName })
     addExpense({
       title: title.trim(),
       amount: parseFloat(amount),
-      payer: payer.toLowerCase().includes(gunName.toLowerCase()) || payer.toLowerCase().includes('gun') ? 'Gun' : 'Cartune',
+      payer: selectedMember?.name || payer,
       category
     })
     setTitle('')
@@ -237,7 +255,8 @@ export default function FinanceView() {
           ) : (
             finance.transactions.map(tx => {
               const Icon = getCategoryIcon(tx.category)
-              const isCartune = tx.payer.toLowerCase().includes('cartune')
+              const member = resolvePayerMember(tx.payer)
+              const isCartune = member?.id === 'cartune' || tx.payer.toLowerCase().includes('cartune') || (state?.users?.cartune?.name && tx.payer.includes(state.users.cartune.name))
 
               return (
                 <div key={tx.id} className="py-2.5 px-1.5 flex items-center justify-between hover:bg-stone-50/70 rounded-xl transition-colors">
@@ -252,13 +271,13 @@ export default function FinanceView() {
                         {tx.title}
                       </div>
                       <div className="flex items-center gap-1.5 text-[11px] text-stone-400 mt-0.5">
-                        {/* Payer Avatar Badge */}
-                        <span className={`w-3.5 h-3.5 rounded-full flex items-center justify-center text-[8px] font-bold text-white ${
-                          isCartune ? 'bg-rose-700' : 'bg-stone-800'
+                        {/* Payer Avatar Badge with member avatar */}
+                        <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] leading-none shrink-0 shadow-2xs ${
+                          isCartune ? 'bg-rose-100 border border-rose-200/80' : 'bg-slate-100 border border-slate-200/80'
                         }`}>
-                          {isCartune ? 'C' : 'G'}
+                          {member?.avatar || (isCartune ? '🐱' : '🐶')}
                         </span>
-                        <span className="font-semibold text-stone-600">{tx.payer}</span>
+                        <span className="font-semibold text-stone-700">{member?.name || tx.payer}</span>
                         <span>·</span>
                         <span>{tx.date}</span>
                       </div>

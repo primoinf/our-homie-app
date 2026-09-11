@@ -1,9 +1,14 @@
 import React from 'react'
 import { useApp } from '../../context/AppContext'
 import BottomNav from './BottomNav'
+import PullToRefresh from './PullToRefresh'
 
 export default function AppShell({ children }) {
-  const { toastMessage } = useApp()
+  const { toastMessage, triggerGitHubSync, syncStatus } = useApp()
+
+  const handleRefresh = async () => {
+    return await triggerGitHubSync('sync')
+  }
 
   return (
     <div className="min-h-screen bg-[#ede8e4] flex justify-center items-start sm:py-4">
@@ -20,10 +25,13 @@ export default function AppShell({ children }) {
           </div>
         )}
 
-        {/* View Content with Safe Area Padding */}
-        <main className="flex-1 overflow-y-auto px-4 pt-5 pb-4">
+        {/* View Content with Pull-To-Refresh Support */}
+        <PullToRefresh
+          onRefresh={handleRefresh}
+          isRefreshing={syncStatus === 'syncing'}
+        >
           {children}
-        </main>
+        </PullToRefresh>
 
         {/* Bottom Navigation */}
         <BottomNav />

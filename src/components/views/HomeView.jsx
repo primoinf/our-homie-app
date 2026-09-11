@@ -238,8 +238,10 @@ export default function HomeView() {
             className="bg-white border border-stone-200/80 rounded-3xl p-3.5 flex items-center justify-between shadow-2xs cursor-pointer hover:border-stone-300 transition-all"
           >
             <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center">
-                <span className="text-xl font-extrabold text-[#8e1c24]">{nearestEvent.day}</span>
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border ${
+                nearestEvent.kind === 'task' ? 'bg-teal-50 border-teal-100 text-teal-700' : 'bg-rose-50 border-rose-100 text-[#8e1c24]'
+              }`}>
+                <span className="text-xl font-extrabold">{nearestEvent.day}</span>
               </div>
               <div>
                 <div className="text-sm font-extrabold text-stone-900">{nearestEvent.title}</div>
@@ -251,7 +253,9 @@ export default function HomeView() {
                       <span>{nearestEvent.time} น.</span>
                     </span>
                   )}
-                  <span className="capitalize text-stone-400">· {nearestEvent.type}</span>
+                  <span className="capitalize text-stone-400">
+                    · {nearestEvent.kind === 'task' ? 'Task' : 'Event'} · {nearestEvent.type} {nearestEvent.user && state.users?.[nearestEvent.user] ? `(${state.users[nearestEvent.user].avatar || '👤'} ${state.users[nearestEvent.user].name})` : ''}
+                  </span>
                 </div>
               </div>
             </div>

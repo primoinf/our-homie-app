@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react'
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react'
 import { INITIAL_DATA, MOCK_DATA, CLEAN_DATA } from '../data/initialData'
 import { syncWithGitHub, testGitHubConnection } from '../services/githubSync'
 
@@ -104,7 +104,11 @@ export function AppProvider({ children }) {
     showToast('บันทึกการตั้งค่า GitHub แล้ว ⚙️')
   }
 
-  const triggerGitHubSync = async (mode = 'sync', isSilent = false) => {
+  const isSyncingRef = useRef(false)
+  const autoSyncTimerRef = useRef(null)
+  const isFirstMountRef = useRef(true)
+
+  const triggerGitHubSync = async (mode = 'sync', isSilent = false, overrideState = null) => {
     if (!githubSettings.token || !githubSettings.username || !githubSettings.repo) {
       if (!isSilent) {
         showToast('กรุณากรอก Token และชื่อ Repo ในหน้า Profile ก่อนครับ ⚠️')
@@ -112,13 +116,15 @@ export function AppProvider({ children }) {
       return false
     }
 
+    isSyncingRef.current = true
     setSyncStatus('syncing')
     setSyncError(null)
     if (!isSilent) showToast('กำลังเชื่อมต่อ GitHub Cloud... ⏳')
 
     try {
+      const stateToUse = overrideState || state
       const result = await syncWithGitHub({
-        localState: state,
+        localState: stateToUse,
         settings: githubSettings,
         mode
       })
@@ -139,6 +145,7 @@ export function AppProvider({ children }) {
           showToast(mode === 'pull' ? 'ดึงข้อมูลจาก GitHub สำเร็จ! ⬇️' : 'ซิงค์ข้อมูลกับ GitHub เรียบร้อยแล้ว! ☁️')
         }
         setTimeout(() => setSyncStatus('idle'), 3500)
+        setTimeout(() => { isSyncingRef.current = false }, 1500)
         return true
       } else {
         setSyncStatus('error')
@@ -147,6 +154,7 @@ export function AppProvider({ children }) {
           showToast(`ซิงค์ล้มเหลว: ${result.error || 'Network error'} ❌`)
         }
         setTimeout(() => setSyncStatus('idle'), 4000)
+        setTimeout(() => { isSyncingRef.current = false }, 1500)
         return false
       }
     } catch (err) {
@@ -154,6 +162,7 @@ export function AppProvider({ children }) {
       setSyncError(err.message)
       if (!isSilent) showToast('เกิดข้อผิดพลาดในการซิงค์ ❌')
       setTimeout(() => setSyncStatus('idle'), 4000)
+      setTimeout(() => { isSyncingRef.current = false }, 1500)
       return false
     }
   }
@@ -176,6 +185,61 @@ export function AppProvider({ children }) {
       triggerGitHubSync('sync', true)
     }
   }, [])
+
+  // Auto-sync on data mutations with debounce (push/sync changes to GitHub)
+  useEffect(() => {
+    if (isFirstMountRef.current) {
+      isFirstMountRef.current = false
+      return
+    }
+
+    if (isSyncingRef.current) return
+
+    if (githubSettings.token && githubSettings.username && githubSettings.repo && githubSettings.autoSync !== false) {
+      if (autoSyncTimerRef.current) clearTimeout(autoSyncTimerRef.current)
+      autoSyncTimerRef.current = setTimeout(() => {
+        if (!isSyncingRef.current) {
+          triggerGitHubSync('sync', true)
+        }
+      }, 2000)
+    }
+
+    return () => {
+      if (autoSyncTimerRef.current) clearTimeout(autoSyncTimerRef.current)
+    }
+  }, [state])
+
+  // Mobile / Background Auto-Pull: when returning to app (window focus or tab visible)
+  useEffect(() => {
+    let lastPullTime = Date.now()
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        const now = Date.now()
+        // If at least 20 seconds since last pull and autoSync is enabled
+        if (now - lastPullTime > 20000 && githubSettings.token && githubSettings.username && githubSettings.repo && githubSettings.autoSync !== false) {
+          lastPullTime = now
+          triggerGitHubSync('sync', true)
+        }
+      }
+    }
+
+    const handleFocus = () => {
+      const now = Date.now()
+      if (now - lastPullTime > 20000 && githubSettings.token && githubSettings.username && githubSettings.repo && githubSettings.autoSync !== false) {
+        lastPullTime = now
+        triggerGitHubSync('sync', true)
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('focus', handleFocus)
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('focus', handleFocus)
+    }
+  }, [githubSettings])
 
   // Switch between Cartune and Gun
   const switchUser = (userId) => {
@@ -222,14 +286,17 @@ export function AppProvider({ children }) {
       const newPts = bonusPoints ? Math.max(0, currentPts + Number(bonusPoints)) : currentPts
       const targetPts = targetPoints ? Number(targetPoints) : prev.awards.targetPoints
       const reward = nextReward !== undefined ? nextReward.trim() : prev.awards.nextReward
+      const now = Date.now()
 
       const newHistory = (bonusPoints && Number(bonusPoints) > 0) ? [
         {
-          id: 'a_' + Date.now(),
+          id: 'a_' + now,
           title: reason?.trim() || 'คะแนนพิเศษจากคู่รัก ✨',
           points: Number(bonusPoints),
           by: prev.users[prev.currentUser]?.name || 'Partner',
-          date: 'Today'
+          date: 'Today',
+          createdAt: now,
+          updatedAt: now
         },
         ...prev.awards.history
       ] : prev.awards.history
@@ -241,7 +308,8 @@ export function AppProvider({ children }) {
           points: newPts,
           targetPoints: targetPts,
           nextReward: reward,
-          history: newHistory
+          history: newHistory,
+          updatedAt: now
         }
       }
     })
@@ -389,7 +457,9 @@ export function AppProvider({ children }) {
     }
 
     setState(prev => {
-      const isCartune = newTx.payer.toLowerCase().includes('cartune')
+      const payerStr = (newTx.payer || '').toLowerCase().trim()
+      const cartuneName = (prev.users?.cartune?.name || '').toLowerCase().trim()
+      const isCartune = payerStr.includes('cartune') || (cartuneName && payerStr.includes(cartuneName))
       const newTotal = prev.finance.totalSpending + numAmount
       const newCartunePaid = isCartune ? prev.finance.cartunePaid + numAmount : prev.finance.cartunePaid
       const newGunPaid = !isCartune ? prev.finance.gunPaid + numAmount : prev.finance.gunPaid
@@ -423,7 +493,9 @@ export function AppProvider({ children }) {
       if (!targetTx) return prev
 
       const numAmount = targetTx.amount || 0
-      const isCartune = targetTx.payer.toLowerCase().includes('cartune')
+      const payerStr = (targetTx.payer || '').toLowerCase().trim()
+      const cartuneName = (prev.users?.cartune?.name || '').toLowerCase().trim()
+      const isCartune = payerStr.includes('cartune') || (cartuneName && payerStr.includes(cartuneName))
       const newTotal = Math.max(0, prev.finance.totalSpending - numAmount)
       const newCartunePaid = isCartune ? Math.max(0, prev.finance.cartunePaid - numAmount) : prev.finance.cartunePaid
       const newGunPaid = !isCartune ? Math.max(0, prev.finance.gunPaid - numAmount) : prev.finance.gunPaid

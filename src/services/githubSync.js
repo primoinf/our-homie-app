@@ -245,11 +245,17 @@ export function mergeStates(local, remote) {
   let gunPaid = 0
   const categorySpentMap = {}
 
+  const cartuneMemberName = (local.users?.cartune?.name || remote.users?.cartune?.name || '').toLowerCase().trim()
+  const gunMemberName = (local.users?.gun?.name || remote.users?.gun?.name || '').toLowerCase().trim()
+
   mergedTransactions.forEach(tx => {
     const amt = Number(tx.amount) || 0
     totalSpending += amt
-    const payer = (tx.payer || '').toLowerCase()
-    if (payer.includes('cartune')) {
+    const payer = (tx.payer || '').toLowerCase().trim()
+    
+    // Check if payer matches cartune (by id 'cartune' or configured name)
+    const isCartune = payer.includes('cartune') || (cartuneMemberName && payer.includes(cartuneMemberName))
+    if (isCartune) {
       cartunePaid += amt
     } else {
       gunPaid += amt
@@ -274,19 +280,29 @@ export function mergeStates(local, remote) {
     transactions: mergedTransactions
   }
 
-  // 6. Awards & Points
+  // 6. Awards & Points with LWW (Last-Write-Wins) timestamp support
   const localHistory = local.awards?.history || []
   const remoteHistory = remote.awards?.history || []
   const mergedHistory = unionById(localHistory, remoteHistory)
     .filter(item => item && item.id && !deletedSet.has(item.id))
     .sort((a, b) => (b.id || '').localeCompare(a.id || ''))
 
+  const localAwardsTime = local.awards?.updatedAt || 0
+  const remoteAwardsTime = remote.awards?.updatedAt || 0
+  const preferLocalAwards = localAwardsTime >= remoteAwardsTime
+
   merged.awards = {
-    ...local.awards,
+    ...(preferLocalAwards ? remote.awards : local.awards),
+    ...(preferLocalAwards ? local.awards : remote.awards),
     points: Math.max(local.awards?.points || 0, remote.awards?.points || 0),
-    targetPoints: remote.awards?.targetPoints || local.awards?.targetPoints || 100,
-    nextReward: remote.awards?.nextReward || local.awards?.nextReward || 'Gift',
-    history: mergedHistory
+    targetPoints: preferLocalAwards
+      ? (local.awards?.targetPoints ?? remote.awards?.targetPoints ?? 100)
+      : (remote.awards?.targetPoints ?? local.awards?.targetPoints ?? 100),
+    nextReward: preferLocalAwards
+      ? (local.awards?.nextReward || remote.awards?.nextReward || 'Gift')
+      : (remote.awards?.nextReward || local.awards?.nextReward || 'Gift'),
+    history: mergedHistory,
+    updatedAt: Math.max(localAwardsTime, remoteAwardsTime)
   }
 
   // 7. Users: Merge profiles with timestamp LWW (Last-Write-Wins)

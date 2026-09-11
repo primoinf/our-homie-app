@@ -7,8 +7,10 @@ export default function CalendarView() {
   const cartuneUser = state?.users?.cartune || { name: 'Cartune', avatar: '👩🏻' }
   const gunUser = state?.users?.gun || { name: 'Gun', avatar: '👦🏻' }
   const [activeSubTab, setActiveSubTab] = useState('mood') // default to 'mood' or 'month'
-  const [filterType, setFilterType] = useState('all') // 'all', 'shared', 'personal'
-  const [selectedDay, setSelectedDay] = useState(10)
+  const [selectedDay, setSelectedDay] = useState(() => {
+    const today = new Date().getDate()
+    return (today >= 1 && today <= 30) ? today : 10
+  })
   const [showAddEventModal, setShowAddEventModal] = useState(false)
   const [newEventTitle, setNewEventTitle] = useState('')
   const [newEventTime, setNewEventTime] = useState('')
@@ -699,7 +701,18 @@ export default function CalendarView() {
                               ) : (
                                 <span className="text-stone-400 shrink-0">{isTask ? 'Due today' : 'All day'}</span>
                               )}
-                              <span className="capitalize text-stone-400 shrink-0">• {ev.type}</span>
+                              {ev.type === 'personal' ? (
+                                <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md shrink-0 ${
+                                  ev.user === 'gun' ? 'bg-slate-100 text-slate-700' : 'bg-rose-100 text-[#8e1c24]'
+                                }`}>
+                                  <span>{ev.user === 'gun' ? (gunUser.avatar || '🐶') : (cartuneUser.avatar || '🐱')}</span>
+                                  <span>{ev.user === 'gun' ? gunUser.name : cartuneUser.name}</span>
+                                </span>
+                              ) : (
+                                <span className="capitalize text-stone-400 shrink-0">
+                                  • {ev.type}{ev.user ? ` (${ev.user === 'gun' ? (gunUser.avatar || '🐶') : (cartuneUser.avatar || '🐱')} ${ev.user === 'gun' ? gunUser.name : cartuneUser.name})` : ''}
+                                </span>
+                              )}
                               {isTask && ev.completed && (
                                 <span className="text-teal-600 font-bold text-[10px] bg-teal-50 px-1.5 py-0.5 rounded shrink-0">✓ ทำแล้ว</span>
                               )}
@@ -790,7 +803,18 @@ export default function CalendarView() {
                             <span>{ev.time} น.</span>
                           </span>
                         )}
-                        <span className="capitalize shrink-0">• {ev.type}</span>
+                        {ev.type === 'personal' ? (
+                          <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md shrink-0 ${
+                            ev.user === 'gun' ? 'bg-slate-100 text-slate-700' : 'bg-rose-100 text-[#8e1c24]'
+                          }`}>
+                            <span>{ev.user === 'gun' ? (gunUser.avatar || '🐶') : (cartuneUser.avatar || '🐱')}</span>
+                            <span>{ev.user === 'gun' ? gunUser.name : cartuneUser.name}</span>
+                          </span>
+                        ) : (
+                          <span className="capitalize shrink-0">
+                            • {ev.type}{ev.user ? ` (${ev.user === 'gun' ? (gunUser.avatar || '🐶') : (cartuneUser.avatar || '🐱')} ${ev.user === 'gun' ? gunUser.name : cartuneUser.name})` : ''}
+                          </span>
+                        )}
                         {isTask && ev.completed && (
                           <span className="text-teal-600 font-bold text-[10px] bg-teal-50 px-1.5 py-0.5 rounded shrink-0">✓ ทำแล้ว</span>
                         )}
