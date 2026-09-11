@@ -71,7 +71,17 @@
       "notes": "ชอบใส่ผ้าพันคอ ขี้อ้อน ชอบนอนบนตัก"
     }
   ],
-  "shopping": [],
+  "shopping": [
+    {
+      "id": "s_1789142165317",
+      "text": "น้ำเปล่า",
+      "category": "Food",
+      "completed": false,
+      "addedBy": "ตูบศักดิ์",
+      "createdAt": 1789142165317,
+      "updatedAt": 1789142165317
+    }
+  ],
   "finance": {
     "monthName": "September 2026",
     "totalSpending": 0,
@@ -153,6 +163,20 @@
         "user": "gun",
         "createdAt": 1789133216406,
         "updatedAt": 1789133216406
+      },
+      {
+        "id": "tk_1789142230817",
+        "title": "ตด",
+        "date": "2026-09-11",
+        "day": 11,
+        "time": "23:59",
+        "type": "personal",
+        "kind": "task",
+        "completed": false,
+        "color": "#38bdf8",
+        "user": "gun",
+        "createdAt": 1789142230817,
+        "updatedAt": 1789142230817
       }
     ],
     "moods": {}
