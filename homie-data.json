@@ -23,7 +23,7 @@
       "updatedAt": 1789073496351
     }
   },
-  "currentUser": "cartune",
+  "currentUser": "gun",
   "awards": {
     "points": 0,
     "targetPoints": 100,
@@ -139,6 +139,20 @@
         "user": "gun",
         "createdAt": 1789133090522,
         "updatedAt": 1789133090522
+      },
+      {
+        "id": "e_1789133216406",
+        "title": "ทดสอบ",
+        "date": "2026-09-11",
+        "day": 11,
+        "time": "",
+        "type": "shared",
+        "kind": "event",
+        "completed": false,
+        "color": "#8e1c24",
+        "user": "gun",
+        "createdAt": 1789133216406,
+        "updatedAt": 1789133216406
       }
     ],
     "moods": {}
