@@ -71,9 +71,9 @@
   ],
   "finance": {
     "monthName": "September 2026",
-    "totalSpending": 0,
-    "cartunePaid": 0,
-    "gunPaid": 0,
+    "totalSpending": 300,
+    "cartunePaid": 200,
+    "gunPaid": 100,
     "cartunePending": 0,
     "cartunePendingCount": 0,
     "gunPending": 0,
@@ -115,7 +115,32 @@
         "icon": "PiggyBank"
       }
     ],
-    "transactions": []
+    "transactions": [
+      {
+        "id": "t_1789142575373",
+        "title": "ข้าว",
+        "amount": 200,
+        "payer": "Cartune",
+        "date": "Today",
+        "verified": true,
+        "category": "Food",
+        "icon": "Utensils",
+        "createdAt": 1789142575373,
+        "updatedAt": 1789142575373
+      },
+      {
+        "id": "t_1789142500869",
+        "title": "ค่าตด",
+        "amount": 100,
+        "payer": "Gun",
+        "date": "Today",
+        "verified": true,
+        "category": "Entertainment",
+        "icon": "Home",
+        "createdAt": 1789142500869,
+        "updatedAt": 1789142500869
+      }
+    ]
   },
   "calendar": {
     "currentMonthYear": "September 2026",
