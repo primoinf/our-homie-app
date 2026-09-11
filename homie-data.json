@@ -32,19 +32,6 @@
   },
   "pets": [
     {
-      "id": "leah",
-      "name": "Leah",
-      "gender": "Female",
-      "breed": "Cocker Spenial",
-      "age": "1 yr 10 mo",
-      "weight": "10 Kg",
-      "lastVaccine": "8 Feb 2026",
-      "photo": "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&w=600&q=80",
-      "todayTask": "Shower",
-      "isFavorite": true,
-      "notes": "ร่าเริง ชอบวิ่งเล่นที่สวน อาบน้ำทุกวันเสาร์"
-    },
-    {
       "id": "lupin",
       "name": "Lupin",
       "gender": "Male",
@@ -172,6 +159,7 @@
     "e_1789073826769",
     "e_1789074691810",
     "tk_1789076404997",
-    "e_1789133216406"
+    "e_1789133216406",
+    "leah"
   ]
 }
