@@ -125,27 +125,13 @@
     "year": 2026,
     "month": 9,
     "selectedDay": 10,
-    "events": [
-      {
-        "id": "tk_1789076404997",
-        "title": "ไปในเมือง",
-        "date": "2026-09-11",
-        "day": 11,
-        "time": "19:00",
-        "type": "personal",
-        "kind": "task",
-        "completed": false,
-        "color": "#38bdf8",
-        "user": "gun",
-        "createdAt": 1789076404997,
-        "updatedAt": 1789076404997
-      }
-    ],
+    "events": [],
     "moods": {}
   },
   "deletedIds": [
     "s_1789070880692",
     "e_1789073826769",
-    "e_1789074691810"
+    "e_1789074691810",
+    "tk_1789076404997"
   ]
 }
