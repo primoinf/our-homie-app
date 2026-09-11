@@ -23,7 +23,7 @@
       "updatedAt": 1789073496351
     }
   },
-  "currentUser": "cartune",
+  "currentUser": "gun",
   "awards": {
     "points": 0,
     "targetPoints": 100,
@@ -125,7 +125,22 @@
     "year": 2026,
     "month": 9,
     "selectedDay": 10,
-    "events": [],
+    "events": [
+      {
+        "id": "e_1789133090522",
+        "title": "ทดสอบ",
+        "date": "2026-09-11",
+        "day": 11,
+        "time": "",
+        "type": "personal",
+        "kind": "event",
+        "completed": false,
+        "color": "#38bdf8",
+        "user": "gun",
+        "createdAt": 1789133090522,
+        "updatedAt": 1789133090522
+      }
+    ],
     "moods": {}
   },
   "deletedIds": [
