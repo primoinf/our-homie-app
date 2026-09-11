@@ -28,7 +28,8 @@
     "points": 0,
     "targetPoints": 100,
     "nextReward": "ย้อมผมที่ enrich",
-    "history": []
+    "history": [],
+    "updatedAt": 0
   },
   "pets": [
     {
