@@ -178,7 +178,20 @@
         "updatedAt": 1789142720618
       }
     ],
-    "moods": {}
+    "moods": {
+      "2026-09-11": {
+        "gun": {
+          "mood": "calm",
+          "label": "Calm",
+          "user": "gun",
+          "userName": "ตูบศักดิ์",
+          "date": "2026-09-11",
+          "icon": "😌",
+          "color": "#a78bfa",
+          "hex": "#a78bfa"
+        }
+      }
+    }
   },
   "deletedIds": [
     "s_1789070880692",
