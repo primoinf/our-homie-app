@@ -61,6 +61,15 @@
   ],
   "shopping": [
     {
+      "id": "s_1789305208136",
+      "text": "หลอดดูด",
+      "category": "Home",
+      "completed": false,
+      "addedBy": "ตูบศักดิ์",
+      "createdAt": 1789305208136,
+      "updatedAt": 1789305208136
+    },
+    {
       "id": "s_1789172984903",
       "text": "เหล้า",
       "category": "Food",
