@@ -220,6 +220,20 @@
         "user": "gun",
         "createdAt": 1789173010787,
         "updatedAt": 1789218105652
+      },
+      {
+        "id": "tk_1789341842887",
+        "title": "เอาเครื่องชั่งน้ำหนัก",
+        "date": "2026-09-14",
+        "day": 14,
+        "time": "",
+        "type": "personal",
+        "kind": "task",
+        "completed": false,
+        "color": "#38bdf8",
+        "user": "gun",
+        "createdAt": 1789341842887,
+        "updatedAt": 1789341842887
       }
     ],
     "moods": {
