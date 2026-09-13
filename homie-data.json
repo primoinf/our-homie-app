@@ -246,6 +246,18 @@
           "color": "#a78bfa",
           "hex": "#a78bfa"
         }
+      },
+      "2026-09-13": {
+        "gun": {
+          "mood": "tired",
+          "label": "Tired",
+          "user": "gun",
+          "userName": "ตูบศักดิ์",
+          "date": "2026-09-13",
+          "icon": "😑",
+          "color": "#f59e0b",
+          "hex": "#f59e0b"
+        }
       }
     }
   },
