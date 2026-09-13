@@ -6,17 +6,101 @@ export default function HomeView() {
   const { state, setActiveTab, toggleShoppingItem, markPetRoutineDone } = useApp()
 
   const pendingShopping = state.shopping.filter(item => !item.completed).length
-  const totalEvents = state.calendar.events.length
   const todayPet = (state.pets && state.pets.length > 0) ? (state.pets.find(p => p.id === 'leah') || state.pets[0]) : null
 
-  // Nearest event closest to today, sorted by date and time
-  const sortedUpcomingEvents = [...state.calendar.events].sort((a, b) => {
-    const dateA = a.date || `2026-09-${String(a.day || 0).padStart(2, '0')}`
-    const dateB = b.date || `2026-09-${String(b.day || 0).padStart(2, '0')}`
-    if (dateA !== dateB) return dateA.localeCompare(dateB)
-    return (a.time || '99:99').localeCompare(b.time || '99:99')
-  })
+  const allEvents = state?.calendar?.events || []
+
+  // Current local date & time
+  const now = new Date()
+  const currentYear = now.getFullYear()
+  const currentMonth = String(now.getMonth() + 1).padStart(2, '0')
+  const currentDay = String(now.getDate()).padStart(2, '0')
+  const todayDateStr = `${currentYear}-${currentMonth}-${currentDay}`
+
+  const tomorrow = new Date(now)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  const tomorrowYear = tomorrow.getFullYear()
+  const tomorrowMonth = String(tomorrow.getMonth() + 1).padStart(2, '0')
+  const tomorrowDay = String(tomorrow.getDate()).padStart(2, '0')
+  const tomorrowDateStr = `${tomorrowYear}-${tomorrowMonth}-${tomorrowDay}`
+
+  const currentHours = String(now.getHours()).padStart(2, '0')
+  const currentMins = String(now.getMinutes()).padStart(2, '0')
+  const currentTimeStr = `${currentHours}:${currentMins}`
+
+  const getEventDateStr = (ev) => {
+    if (ev.date && typeof ev.date === 'string') {
+      const parts = ev.date.split('-')
+      if (parts.length === 3) {
+        return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`
+      }
+    }
+    const calYear = state?.calendar?.year || currentYear
+    const calMonth = String(state?.calendar?.month || currentMonth).padStart(2, '0')
+    const day = String(ev.day || 1).padStart(2, '0')
+    return `${calYear}-${calMonth}-${day}`
+  }
+
+  // Filter and sort events: only upcoming events (today or future)
+  const sortedUpcomingEvents = allEvents
+    .filter(ev => {
+      // Completed tasks are finished, not upcoming
+      if (ev.kind === 'task' && ev.completed) return false
+
+      const evDate = getEventDateStr(ev)
+
+      // Strictly in the future
+      if (evDate > todayDateStr) return true
+
+      // Strictly in the past
+      if (evDate < todayDateStr) return false
+
+      // Date is TODAY (evDate === todayDateStr)
+      // Uncompleted tasks are still pending today
+      if (ev.kind === 'task') return true
+
+      // Events with no specific time are all-day today
+      if (!ev.time) return true
+
+      // Events with a specific time today: upcoming or ongoing (within 60 mins of start)
+      if (ev.time >= currentTimeStr) return true
+
+      const [evH, evM] = ev.time.split(':').map(Number)
+      if (!isNaN(evH) && !isNaN(evM)) {
+        const evMinutes = evH * 60 + evM
+        const curMinutes = parseInt(currentHours, 10) * 60 + parseInt(currentMins, 10)
+        // Keep active for 60 minutes after start time
+        if (curMinutes - evMinutes <= 60) return true
+      }
+
+      return false
+    })
+    .sort((a, b) => {
+      const dateA = getEventDateStr(a)
+      const dateB = getEventDateStr(b)
+      if (dateA !== dateB) return dateA.localeCompare(dateB)
+      return (a.time || '99:99').localeCompare(b.time || '99:99')
+    })
+
   const nearestEvent = sortedUpcomingEvents[0]
+  const nearestDateStr = nearestEvent ? getEventDateStr(nearestEvent) : ''
+  const isNearestToday = nearestDateStr === todayDateStr
+  const isNearestTomorrow = nearestDateStr === tomorrowDateStr
+  const nearestDayNum = nearestEvent ? (nearestEvent.day || parseInt(nearestDateStr.split('-')[2], 10) || 1) : 1
+
+  const formatEventDateDisplay = (dateStr, fallbackDay) => {
+    if (dateStr) {
+      const parts = dateStr.split('-')
+      if (parts.length === 3) {
+        const y = parts[0]
+        const m = parseInt(parts[1], 10)
+        const d = parseInt(parts[2], 10)
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        return `${d} ${monthNames[m - 1] || 'Sep'} ${y}`
+      }
+    }
+    return `${fallbackDay || 1} Sep 2026`
+  }
 
   const totalBudget = state.finance.budgets.reduce((acc, b) => acc + (b.budget || 0), 0)
   const budgetPct = totalBudget > 0 ? Math.round((state.finance.totalSpending / totalBudget) * 100) : 0
@@ -49,7 +133,7 @@ export default function HomeView() {
             <Calendar size={16} strokeWidth={2.2} />
           </div>
           <span className="text-base font-extrabold text-teal-600 leading-tight">
-            {totalEvents}
+            {sortedUpcomingEvents.length}
           </span>
           <span className="text-[11px] font-semibold text-stone-500 mt-0.5">Events</span>
         </button>
@@ -241,12 +325,22 @@ export default function HomeView() {
               <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border ${
                 nearestEvent.kind === 'task' ? 'bg-teal-50 border-teal-100 text-teal-700' : 'bg-rose-50 border-rose-100 text-[#8e1c24]'
               }`}>
-                <span className="text-xl font-extrabold">{nearestEvent.day}</span>
+                <span className="text-xl font-extrabold">{nearestDayNum}</span>
               </div>
               <div>
                 <div className="text-sm font-extrabold text-stone-900">{nearestEvent.title}</div>
                 <div className="text-xs text-stone-400 font-medium flex items-center gap-1.5 mt-0.5">
-                  <span>{nearestEvent.day} Sep 2026</span>
+                  {isNearestToday && (
+                    <span className="font-extrabold text-teal-700 bg-teal-50 border border-teal-200/60 px-1.5 py-0.5 rounded text-[10px]">
+                      TODAY
+                    </span>
+                  )}
+                  {isNearestTomorrow && (
+                    <span className="font-extrabold text-blue-700 bg-blue-50 border border-blue-200/60 px-1.5 py-0.5 rounded text-[10px]">
+                      TOMORROW
+                    </span>
+                  )}
+                  <span>{formatEventDateDisplay(nearestDateStr, nearestEvent.day)}</span>
                   {nearestEvent.time && (
                     <span className="font-bold text-stone-700 bg-stone-100 px-1.5 py-0.5 rounded-md text-[11px] flex items-center gap-1">
                       <Clock size={11} className="text-stone-400" />
