@@ -90,9 +90,9 @@
   ],
   "finance": {
     "monthName": "September 2026",
-    "totalSpending": 625,
+    "totalSpending": 1018,
     "cartunePaid": 525,
-    "gunPaid": 100,
+    "gunPaid": 493,
     "cartunePending": 0,
     "cartunePendingCount": 0,
     "gunPending": 0,
@@ -135,6 +135,18 @@
       }
     ],
     "transactions": [
+      {
+        "id": "t_1789343835361",
+        "title": "มาดามเหล่ย",
+        "amount": 393,
+        "payer": "ตูบศักดิ์",
+        "date": "Today",
+        "verified": true,
+        "category": "Food",
+        "icon": "Utensils",
+        "createdAt": 1789343835361,
+        "updatedAt": 1789343835361
+      },
       {
         "id": "t_1789218089032",
         "title": "ข้าว",
