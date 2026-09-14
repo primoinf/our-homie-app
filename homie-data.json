@@ -90,9 +90,9 @@
   ],
   "finance": {
     "monthName": "September 2026",
-    "totalSpending": 1134,
+    "totalSpending": 1034,
     "cartunePaid": 525,
-    "gunPaid": 609,
+    "gunPaid": 509,
     "cartunePending": 0,
     "cartunePendingCount": 0,
     "gunPending": 0,
@@ -134,9 +134,9 @@
         "icon": "PiggyBank"
       },
       {
-        "id": "b_1789344358819",
+        "id": "b_1789344385754",
         "name": "Food",
-        "budget": 6000,
+        "budget": 12000,
         "spent": 1034,
         "icon": "Utensils"
       }
@@ -189,18 +189,6 @@
         "icon": "Utensils",
         "createdAt": 1789142575373,
         "updatedAt": 1789142575373
-      },
-      {
-        "id": "t_1789142500869",
-        "title": "ค่าตด",
-        "amount": 100,
-        "payer": "Gun",
-        "date": "Today",
-        "verified": true,
-        "category": "Entertainment",
-        "icon": "Home",
-        "createdAt": 1789142500869,
-        "updatedAt": 1789142500869
       }
     ]
   },
@@ -312,6 +300,8 @@
     "e_1789074691810",
     "tk_1789076404997",
     "e_1789133216406",
-    "leah"
+    "leah",
+    "b_1789344358819",
+    "t_1789142500869"
   ]
 }
