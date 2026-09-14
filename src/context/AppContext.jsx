@@ -525,6 +525,74 @@ export function AppProvider({ children }) {
     showToast('ลบรายการค่าใช้จ่ายแล้ว 🗑️')
   }
 
+  const addBudgetCategory = ({ name, budget, icon = 'ShoppingBag' }) => {
+    if (!name || !name.trim()) return
+    const trimmedName = name.trim()
+    const numBudget = Math.max(0, parseFloat(budget) || 0)
+
+    setState(prev => {
+      const currentBudgets = prev.finance?.budgets || []
+      const existingIndex = currentBudgets.findIndex(
+        b => b.name.toLowerCase() === trimmedName.toLowerCase()
+      )
+
+      // Calculate existing spent in this category from current transactions
+      const existingSpent = (prev.finance?.transactions || [])
+        .filter(t => (t.category || '').toLowerCase() === trimmedName.toLowerCase())
+        .reduce((sum, t) => sum + (t.amount || 0), 0)
+
+      let updatedBudgets
+      if (existingIndex >= 0) {
+        // Update existing category
+        updatedBudgets = currentBudgets.map((b, idx) => {
+          if (idx === existingIndex) {
+            return {
+              ...b,
+              budget: numBudget,
+              icon: icon || b.icon || 'ShoppingBag'
+            }
+          }
+          return b
+        })
+      } else {
+        // Create new category
+        const newCat = {
+          id: 'b_' + Date.now(),
+          name: trimmedName,
+          budget: numBudget,
+          spent: existingSpent,
+          icon: icon || 'ShoppingBag'
+        }
+        updatedBudgets = [...currentBudgets, newCat]
+      }
+
+      return {
+        ...prev,
+        finance: {
+          ...prev.finance,
+          budgets: updatedBudgets
+        }
+      }
+    })
+
+    showToast(`บันทึกหมวดหมู่ "${trimmedName}" งบ ฿${numBudget.toLocaleString()} แล้ว 🎯`)
+  }
+
+  const deleteBudgetCategory = (catId) => {
+    setState(prev => {
+      const updatedBudgets = (prev.finance?.budgets || []).filter(b => b.id !== catId)
+      return {
+        ...prev,
+        finance: {
+          ...prev.finance,
+          budgets: updatedBudgets
+        },
+        deletedIds: Array.from(new Set([...(prev.deletedIds || []), catId])).slice(-500)
+      }
+    })
+    showToast('ลบหมวดหมู่งบประมาณแล้ว 🗑️')
+  }
+
   // Calendar & Mood actions
   const logMood = (dateStr, moodKey) => {
     const moodMap = {
@@ -686,6 +754,8 @@ export function AppProvider({ children }) {
       togglePetFavorite,
       addExpense,
       deleteExpense,
+      addBudgetCategory,
+      deleteBudgetCategory,
       logMood,
       addCalendarEvent,
       toggleCalendarItem,

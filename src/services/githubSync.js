@@ -264,7 +264,10 @@ export function mergeStates(local, remote) {
     categorySpentMap[cat] = (categorySpentMap[cat] || 0) + amt
   })
 
-  const baseBudgets = (local.finance?.budgets || remote.finance?.budgets || [])
+  const localBudgets = local.finance?.budgets || []
+  const remoteBudgets = remote.finance?.budgets || []
+  const baseBudgets = unionById(localBudgets, remoteBudgets)
+    .filter(item => item && item.id && !deletedSet.has(item.id))
   const mergedBudgets = baseBudgets.map(b => ({
     ...b,
     spent: categorySpentMap[b.name] || 0

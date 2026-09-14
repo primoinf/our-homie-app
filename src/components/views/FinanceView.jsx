@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
 import { useApp } from '../../context/AppContext'
-import { Wallet, Plus, Check, Clock, Utensils, PawPrint, Receipt, Home, Wrench, ShoppingBag, Coffee, Store, Building2, PiggyBank, ArrowUpDown, Trash2 } from 'lucide-react'
+import { Wallet, Plus, Check, Clock, Utensils, PawPrint, Receipt, Home, Wrench, ShoppingBag, Coffee, Store, Building2, PiggyBank, ArrowUpDown, Trash2, Car, Sparkles, Heart } from 'lucide-react'
 
 export default function FinanceView() {
-  const { state, addExpense, deleteExpense } = useApp()
+  const { state, addExpense, deleteExpense, addBudgetCategory, deleteBudgetCategory } = useApp()
   const cartuneName = state?.users?.cartune?.name || 'Cartune'
   const gunName = state?.users?.gun?.name || 'Gun'
 
@@ -13,20 +13,47 @@ export default function FinanceView() {
   const [payer, setPayer] = useState(state.currentUser === 'gun' ? gunName : cartuneName)
   const [category, setCategory] = useState('Food')
 
+  // Add Budget Category Modal state
+  const [showAddCategoryModal, setShowAddCategoryModal] = useState(false)
+  const [categoryName, setCategoryName] = useState('')
+  const [categoryBudget, setCategoryBudget] = useState('')
+  const [categoryIcon, setCategoryIcon] = useState('ShoppingBag')
+
   const { finance } = state
 
-  const getCategoryIcon = (name) => {
-    switch (name) {
-      case 'Utilities': return Receipt
-      case 'Pets': return PawPrint
-      case 'Home Supplies': return Home
-      case 'Building Fees': return Building2
-      case 'Saving': return PiggyBank
-      case 'Food': return Utensils
-      case 'Entertainment': return Coffee
-      default: return ShoppingBag
-    }
+  const ICON_OPTIONS = [
+    { name: 'Utensils', label: 'อาหาร', icon: Utensils },
+    { name: 'Coffee', label: 'เครื่องดื่ม/คาเฟ่', icon: Coffee },
+    { name: 'ShoppingBag', label: 'ช้อปปิ้ง', icon: ShoppingBag },
+    { name: 'Receipt', label: 'บิล/สาธารณูปโภค', icon: Receipt },
+    { name: 'Home', label: 'ของใช้ในบ้าน', icon: Home },
+    { name: 'PawPrint', label: 'สัตว์เลี้ยง', icon: PawPrint },
+    { name: 'Car', label: 'เดินทาง', icon: Car },
+    { name: 'Sparkles', label: 'ส่วนตัว/สุขภาพ', icon: Sparkles },
+    { name: 'Building2', label: 'ที่พัก/ส่วนกลาง', icon: Building2 },
+    { name: 'PiggyBank', label: 'ออมเงิน', icon: PiggyBank }
+  ]
+
+  const getCategoryIcon = (name, iconName) => {
+    const key = (iconName || name || '').toLowerCase()
+    if (key.includes('util') || key.includes('receipt') || key.includes('ไฟ') || key.includes('น้ำ')) return Receipt
+    if (key.includes('pet') || key.includes('paw') || key.includes('แมว') || key.includes('หมา')) return PawPrint
+    if (key.includes('home') || key.includes('house') || key.includes('บ้าน')) return Home
+    if (key.includes('bldg') || key.includes('building') || key.includes('คอนโด') || key.includes('ส่วนกลาง')) return Building2
+    if (key.includes('save') || key.includes('saving') || key.includes('piggy') || key.includes('ออม')) return PiggyBank
+    if (key.includes('food') || key.includes('utensils') || key.includes('อาหาร') || key.includes('ข้าว')) return Utensils
+    if (key.includes('coffee') || key.includes('cafe') || key.includes('entertain') || key.includes('เหล้า') || key.includes('ดื่ม')) return Coffee
+    if (key.includes('car') || key.includes('travel') || key.includes('เดินทาง') || key.includes('น้ำมัน')) return Car
+    if (key.includes('sparkle') || key.includes('beauty') || key.includes('สวย')) return Sparkles
+    if (key.includes('heart') || key.includes('health')) return Heart
+    if (key.includes('wrench') || key.includes('ซ่อม')) return Wrench
+    return ShoppingBag
   }
+
+  const availableCategories = Array.from(new Set([
+    ...(finance?.budgets || []).map(b => b.name),
+    'Food', 'Home Supplies', 'Utilities', 'Pets', 'Entertainment'
+  ]))
 
   const resolvePayerMember = (payerString) => {
     const p = (payerString || '').toLowerCase().trim()
@@ -58,6 +85,20 @@ export default function FinanceView() {
     setTitle('')
     setAmount('')
     setShowAddModal(false)
+  }
+
+  const handleAddCategory = (e) => {
+    e.preventDefault()
+    if (!categoryName.trim()) return
+    addBudgetCategory({
+      name: categoryName.trim(),
+      budget: parseFloat(categoryBudget) || 0,
+      icon: categoryIcon
+    })
+    setCategoryName('')
+    setCategoryBudget('')
+    setCategoryIcon('ShoppingBag')
+    setShowAddCategoryModal(false)
   }
 
   // Calculate settlement: Cartune paid vs Gun paid
@@ -186,47 +227,64 @@ export default function FinanceView() {
             MONTHLY BUDGET
           </span>
           <button
-            onClick={() => setShowAddModal(true)}
-            className="text-xs font-bold text-[#8e1c24] hover:underline"
+            type="button"
+            onClick={() => setShowAddCategoryModal(true)}
+            className="text-xs font-bold text-[#8e1c24] hover:underline cursor-pointer"
           >
             + Add Category
           </button>
         </div>
 
         <div className="bg-white border border-stone-200/80 rounded-3xl p-4 shadow-2xs divide-y divide-stone-100">
-          {finance.budgets.map(cat => {
-            const Icon = getCategoryIcon(cat.name)
-            const isOver = cat.spent > cat.budget
-            const pct = cat.budget > 0 ? Math.min(100, (cat.spent / cat.budget) * 100) : 0
+          {(finance.budgets || []).length === 0 ? (
+            <div className="py-6 text-center text-xs text-stone-400">
+              ยังไม่มีหมวดหมู่งบประมาณ (กด + Add Category ด้านบนเพื่อเพิ่ม)
+            </div>
+          ) : (
+            finance.budgets.map(cat => {
+              const Icon = getCategoryIcon(cat.name, cat.icon)
+              const isOver = cat.spent > cat.budget
+              const pct = cat.budget > 0 ? Math.min(100, (cat.spent / cat.budget) * 100) : 0
 
-            return (
-              <div key={cat.id} className="py-2.5 first:pt-0 last:pb-0">
-                <div className="flex items-center justify-between mb-1.5">
-                  <div className="flex items-center gap-2">
-                    <Icon size={16} className="text-stone-400" />
-                    <span className="text-sm font-bold text-stone-800">{cat.name}</span>
+              return (
+                <div key={cat.id} className="py-2.5 first:pt-0 last:pb-0">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center gap-2">
+                      <Icon size={16} className="text-stone-400" />
+                      <span className="text-sm font-bold text-stone-800">{cat.name}</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <div className="text-xs font-bold">
+                        <span className={isOver ? 'text-[#8e1c24] font-extrabold' : 'text-stone-800'}>
+                          ฿{cat.spent.toLocaleString()}
+                        </span>
+                        <span className="text-stone-400 font-medium"> / ฿{cat.budget.toLocaleString()}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => deleteBudgetCategory(cat.id)}
+                        className="opacity-40 hover:opacity-100 text-stone-400 hover:text-rose-600 transition-all p-1 rounded-lg cursor-pointer"
+                        title={`ลบหมวดหมู่ ${cat.name}`}
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
                   </div>
 
-                  <div className="text-xs font-bold">
-                    <span className={isOver ? 'text-[#8e1c24] font-extrabold' : 'text-stone-800'}>
-                      ฿{cat.spent.toLocaleString()}
-                    </span>
-                    <span className="text-stone-400 font-medium"> / ฿{cat.budget.toLocaleString()}</span>
+                  {/* Progress Bar */}
+                  <div className="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${
+                        isOver ? 'bg-[#8e1c24]' : 'bg-stone-300'
+                      }`}
+                      style={{ width: `${pct}%` }}
+                    ></div>
                   </div>
                 </div>
-
-                {/* Progress Bar */}
-                <div className="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all duration-500 ${
-                      isOver ? 'bg-[#8e1c24]' : 'bg-stone-300'
-                    }`}
-                    style={{ width: `${pct}%` }}
-                  ></div>
-                </div>
-              </div>
-            )
-          })}
+              )
+            })
+          )}
         </div>
       </div>
 
@@ -354,11 +412,9 @@ export default function FinanceView() {
                     onChange={(e) => setCategory(e.target.value)}
                     className="w-full mt-1 px-2.5 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-bold focus:outline-none"
                   >
-                    <option value="Food">Food</option>
-                    <option value="Home Supplies">Home Supplies</option>
-                    <option value="Utilities">Utilities</option>
-                    <option value="Pets">Pets</option>
-                    <option value="Entertainment">Entertainment</option>
+                    {availableCategories.map(catOption => (
+                      <option key={catOption} value={catOption}>{catOption}</option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -367,15 +423,95 @@ export default function FinanceView() {
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 bg-stone-100 text-stone-700 text-xs font-bold rounded-xl"
+                  className="px-4 py-2 bg-stone-100 text-stone-700 text-xs font-bold rounded-xl cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[#8e1c24] text-white text-xs font-bold rounded-xl"
+                  className="px-4 py-2 bg-[#8e1c24] text-white text-xs font-bold rounded-xl cursor-pointer"
                 >
                   Save Expense
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Add Budget Category Modal */}
+      {showAddCategoryModal && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-5 w-full max-w-sm shadow-xl animate-fade-in border border-stone-200">
+            <h3 className="text-lg font-extrabold text-stone-900 mb-1 font-display">Add Budget Category</h3>
+            <p className="text-xs text-stone-400 mb-3">กำหนดหมวดหมู่และงบประมาณรายเดือน</p>
+            <form onSubmit={handleAddCategory} className="space-y-3">
+              <div>
+                <label className="text-xs font-bold text-stone-600">Category Name</label>
+                <input
+                  type="text"
+                  value={categoryName}
+                  onChange={(e) => setCategoryName(e.target.value)}
+                  placeholder="e.g. อาหาร, คาเฟ่, ท่องเที่ยว, ช้อปปิ้ง"
+                  autoFocus
+                  className="w-full mt-1 px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-sm focus:outline-none focus:border-[#8e1c24]"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-stone-600">Monthly Budget (฿)</label>
+                <input
+                  type="number"
+                  step="any"
+                  value={categoryBudget}
+                  onChange={(e) => setCategoryBudget(e.target.value)}
+                  placeholder="e.g. 3000"
+                  className="w-full mt-1 px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-sm focus:outline-none focus:border-[#8e1c24]"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-stone-600">Icon</label>
+                <div className="grid grid-cols-5 gap-1.5 mt-1.5">
+                  {ICON_OPTIONS.map(opt => {
+                    const IconComp = opt.icon
+                    const isSelected = categoryIcon === opt.name
+                    return (
+                      <button
+                        key={opt.name}
+                        type="button"
+                        onClick={() => setCategoryIcon(opt.name)}
+                        className={`h-11 rounded-xl flex flex-col items-center justify-center border transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-rose-50 border-[#8e1c24] text-[#8e1c24] shadow-2xs scale-105'
+                            : 'bg-stone-50 border-stone-200 text-stone-500 hover:bg-stone-100'
+                        }`}
+                        title={opt.label}
+                      >
+                        <IconComp size={18} />
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddCategoryModal(false)
+                    setCategoryName('')
+                    setCategoryBudget('')
+                  }}
+                  className="px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold rounded-xl cursor-pointer transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-[#8e1c24] hover:bg-[#78171e] text-white text-xs font-bold rounded-xl cursor-pointer shadow-xs transition-colors"
+                >
+                  Save Category
                 </button>
               </div>
             </form>
