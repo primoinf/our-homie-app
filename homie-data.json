@@ -132,6 +132,13 @@
         "spent": 0,
         "budget": 2000,
         "icon": "PiggyBank"
+      },
+      {
+        "id": "b_1789344358819",
+        "name": "Food",
+        "budget": 6000,
+        "spent": 1034,
+        "icon": "Utensils"
       }
     ],
     "transactions": [
