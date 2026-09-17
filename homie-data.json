@@ -90,9 +90,9 @@
   ],
   "finance": {
     "monthName": "September 2026",
-    "totalSpending": 1034,
+    "totalSpending": 1954,
     "cartunePaid": 525,
-    "gunPaid": 509,
+    "gunPaid": 1429,
     "cartunePending": 0,
     "cartunePendingCount": 0,
     "gunPending": 0,
@@ -101,7 +101,7 @@
       {
         "id": "b_util",
         "name": "Utilities",
-        "spent": 0,
+        "spent": 920,
         "budget": 3000,
         "icon": "Receipt"
       },
@@ -142,6 +142,18 @@
       }
     ],
     "transactions": [
+      {
+        "id": "t_1789375270478",
+        "title": "ต่อภาษี",
+        "amount": 920,
+        "payer": "ตูบศักดิ์",
+        "date": "Today",
+        "verified": true,
+        "category": "Utilities",
+        "icon": "Receipt",
+        "createdAt": 1789375270478,
+        "updatedAt": 1789375270478
+      },
       {
         "id": "t_1789343848804",
         "title": "ม่อนม่อน",
