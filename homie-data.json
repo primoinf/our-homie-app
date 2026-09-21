@@ -64,10 +64,10 @@
       "id": "s_1789305208136",
       "text": "หลอดดูด",
       "category": "Home",
-      "completed": false,
+      "completed": true,
       "addedBy": "ตูบศักดิ์",
       "createdAt": 1789305208136,
-      "updatedAt": 1789305208136
+      "updatedAt": 1789951540892
     },
     {
       "id": "s_1789172984903",
