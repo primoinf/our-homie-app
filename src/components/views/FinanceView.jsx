@@ -1,17 +1,47 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { useApp } from '../../context/AppContext'
-import { Wallet, Plus, Check, Clock, Utensils, PawPrint, Receipt, Home, Wrench, ShoppingBag, Coffee, Store, Building2, PiggyBank, ArrowUpDown, Trash2, Car, Sparkles, Heart } from 'lucide-react'
+import {
+  Wallet, Plus, Check, Clock, Utensils, PawPrint, Receipt, Home, Wrench,
+  ShoppingBag, Coffee, Store, Building2, PiggyBank, ArrowUpDown, Trash2,
+  Car, Sparkles, Heart, ChevronLeft, ChevronRight, ChevronDown, RotateCcw,
+  Calendar as CalendarIcon
+} from 'lucide-react'
+import {
+  MONTH_NAMES_EN,
+  MONTH_NAMES_TH,
+  MONTH_NAMES_TH_SHORT,
+  getTodayDateStr,
+  getCurrentYearMonth,
+  formatMonthYear,
+  formatMonthYearTh,
+  getAdjacentMonth,
+  getTxYearMonth,
+  formatTxDisplayDate
+} from '../../utils/dateUtils'
 
 export default function FinanceView() {
   const { state, addExpense, deleteExpense, addBudgetCategory, deleteBudgetCategory } = useApp()
   const cartuneName = state?.users?.cartune?.name || 'Cartune'
   const gunName = state?.users?.gun?.name || 'Gun'
 
+  // Current real month/year
+  const currentYM = getCurrentYearMonth()
+
+  // Selected month state
+  const [selectedYear, setSelectedYear] = useState(currentYM.year)
+  const [selectedMonth, setSelectedMonth] = useState(currentYM.month)
+  const [showMonthPicker, setShowMonthPicker] = useState(false)
+  const [pickerYear, setPickerYear] = useState(currentYM.year)
+
+  const isCurrentMonth = selectedYear === currentYM.year && selectedMonth === currentYM.month
+
+  // Add Expense Modal state
   const [showAddModal, setShowAddModal] = useState(false)
   const [title, setTitle] = useState('')
   const [amount, setAmount] = useState('')
   const [payer, setPayer] = useState(state.currentUser === 'gun' ? gunName : cartuneName)
   const [category, setCategory] = useState('Food')
+  const [expenseDate, setExpenseDate] = useState(getTodayDateStr())
 
   // Add Budget Category Modal state
   const [showAddCategoryModal, setShowAddCategoryModal] = useState(false)
@@ -20,6 +50,100 @@ export default function FinanceView() {
   const [categoryIcon, setCategoryIcon] = useState('ShoppingBag')
 
   const { finance } = state
+  const allTransactions = finance?.transactions || []
+
+  // Month navigation handlers
+  const handlePrevMonth = () => {
+    const { year, month } = getAdjacentMonth(selectedYear, selectedMonth, -1)
+    setSelectedYear(year)
+    setSelectedMonth(month)
+    setPickerYear(year)
+    setShowMonthPicker(false)
+  }
+
+  const handleNextMonth = () => {
+    const { year, month } = getAdjacentMonth(selectedYear, selectedMonth, 1)
+    setSelectedYear(year)
+    setSelectedMonth(month)
+    setPickerYear(year)
+    setShowMonthPicker(false)
+  }
+
+  const handleGoCurrentMonth = () => {
+    setSelectedYear(currentYM.year)
+    setSelectedMonth(currentYM.month)
+    setPickerYear(currentYM.year)
+    setShowMonthPicker(false)
+  }
+
+  // Filter transactions for the selected month
+  const monthlyTransactions = useMemo(() => {
+    return allTransactions.filter(tx => {
+      const { year, month } = getTxYearMonth(tx, currentYM.year, currentYM.month)
+      return year === selectedYear && month === selectedMonth
+    }).sort((a, b) => {
+      const timeA = a.createdAt || (typeof a.id === 'string' && a.id.startsWith('t_') ? parseInt(a.id.slice(2), 10) : 0)
+      const timeB = b.createdAt || (typeof b.id === 'string' && b.id.startsWith('t_') ? parseInt(b.id.slice(2), 10) : 0)
+      return timeB - timeA
+    })
+  }, [allTransactions, selectedYear, selectedMonth, currentYM.year, currentYM.month])
+
+  // Calculate monthly metrics dynamically
+  const {
+    monthlyTotalSpending,
+    monthlyCartunePaid,
+    monthlyGunPaid,
+    categorySpentMap
+  } = useMemo(() => {
+    let total = 0
+    let cPaid = 0
+    let gPaid = 0
+    const catMap = {}
+
+    const cName = (state?.users?.cartune?.name || '').toLowerCase().trim()
+    const gName = (state?.users?.gun?.name || '').toLowerCase().trim()
+
+    monthlyTransactions.forEach(tx => {
+      const amt = Number(tx.amount) || 0
+      total += amt
+      const payerStr = (tx.payer || '').toLowerCase().trim()
+      const isCartune = payerStr.includes('cartune') || (cName && payerStr.includes(cName))
+      if (isCartune) {
+        cPaid += amt
+      } else {
+        gPaid += amt
+      }
+      const cat = tx.category || 'Other'
+      catMap[cat] = (catMap[cat] || 0) + amt
+    })
+
+    return {
+      monthlyTotalSpending: total,
+      monthlyCartunePaid: cPaid,
+      monthlyGunPaid: gPaid,
+      categorySpentMap: catMap
+    }
+  }, [monthlyTransactions, state?.users?.cartune?.name, state?.users?.gun?.name])
+
+  // Calculate monthly budgets with dynamic spent for the selected month
+  const monthlyBudgets = useMemo(() => {
+    return (finance?.budgets || []).map(b => ({
+      ...b,
+      spent: categorySpentMap[b.name] || 0
+    }))
+  }, [finance?.budgets, categorySpentMap])
+
+  // Calculate settlement for the selected month
+  const monthlyDiff = monthlyGunPaid - monthlyCartunePaid
+  const monthlySettleSummary = monthlyDiff > 0
+    ? `${cartuneName} owes ${gunName} ฿${(monthlyDiff / 2).toLocaleString()}`
+    : monthlyDiff < 0
+    ? `${gunName} owes ${cartuneName} ฿${(Math.abs(monthlyDiff) / 2).toLocaleString()}`
+    : 'All expenses balanced equally'
+
+  // Pending settlement calculation
+  const pendingCartuneAmt = monthlyDiff > 0 ? (monthlyDiff / 2) : (isCurrentMonth && finance.cartunePending ? finance.cartunePending : 0)
+  const pendingGunAmt = monthlyDiff < 0 ? (Math.abs(monthlyDiff) / 2) : (isCurrentMonth && finance.gunPending ? finance.gunPending : 0)
 
   const ICON_OPTIONS = [
     { name: 'Utensils', label: 'อาหาร', icon: Utensils },
@@ -71,6 +195,18 @@ export default function FinanceView() {
     return { name: payerString, avatar: '👤', role: 'Member' }
   }
 
+  const openAddModalWithDate = (dateOverride = null) => {
+    if (dateOverride) {
+      setExpenseDate(dateOverride)
+    } else if (isCurrentMonth) {
+      setExpenseDate(getTodayDateStr())
+    } else {
+      // Default to 1st day of the selected month
+      setExpenseDate(`${selectedYear}-${String(selectedMonth).padStart(2, '0')}-01`)
+    }
+    setShowAddModal(true)
+  }
+
   const handleAddExpense = (e) => {
     e.preventDefault()
     if (!title.trim() || !amount) return
@@ -80,7 +216,8 @@ export default function FinanceView() {
       title: title.trim(),
       amount: parseFloat(amount),
       payer: selectedMember?.name || payer,
-      category
+      category,
+      date: expenseDate || getTodayDateStr()
     })
     setTitle('')
     setAmount('')
@@ -101,14 +238,6 @@ export default function FinanceView() {
     setShowAddCategoryModal(false)
   }
 
-  // Calculate settlement: Cartune paid vs Gun paid
-  const diff = finance.gunPaid - finance.cartunePaid
-  const settleSummary = diff > 0
-    ? `${cartuneName} owes ${gunName} ฿${(diff / 2).toLocaleString()}`
-    : diff < 0
-    ? `${gunName} owes ${cartuneName} ฿${(Math.abs(diff) / 2).toLocaleString()}`
-    : 'All expenses balanced equally'
-
   return (
     <div className="space-y-4 pt-1 animate-fade-in">
       
@@ -124,17 +253,132 @@ export default function FinanceView() {
             </h1>
           </div>
           <p className="text-xs text-stone-400 font-medium mt-0.5">
-            {finance.monthName} · Shared Expenses
+            {formatMonthYear(selectedYear, selectedMonth)} · Shared Expenses
           </p>
         </div>
 
         <button
-          onClick={() => setShowAddModal(true)}
+          onClick={() => openAddModalWithDate()}
           className="flex items-center gap-1.5 px-3 py-1.5 bg-[#8e1c24] hover:bg-[#78171e] text-white rounded-full text-xs font-bold shadow-xs active:scale-95 transition-all cursor-pointer"
         >
           <Plus size={14} strokeWidth={2.5} />
           <span>Add Expense</span>
         </button>
+      </div>
+
+      {/* MONTH NAVIGATION BAR */}
+      <div className="bg-white border border-stone-200/80 rounded-3xl p-3 shadow-2xs">
+        <div className="flex items-center justify-between">
+          <button
+            type="button"
+            onClick={handlePrevMonth}
+            className="w-9 h-9 rounded-2xl flex items-center justify-center text-stone-500 hover:text-stone-800 hover:bg-stone-100 active:scale-95 transition-all cursor-pointer"
+            title="เดือนก่อนหน้า"
+          >
+            <ChevronLeft size={18} strokeWidth={2.5} />
+          </button>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setPickerYear(selectedYear)
+                setShowMonthPicker(!showMonthPicker)
+              }}
+              className="flex flex-col items-center px-3 py-1 rounded-2xl hover:bg-stone-50 active:scale-98 transition-all cursor-pointer group"
+            >
+              <div className="flex items-center gap-1.5">
+                <CalendarIcon size={14} className="text-[#8e1c24]" />
+                <span className="text-sm font-extrabold text-stone-900 font-display group-hover:text-[#8e1c24] transition-colors">
+                  {formatMonthYear(selectedYear, selectedMonth)}
+                </span>
+                <ChevronDown size={14} className={`text-stone-400 transition-transform ${showMonthPicker ? 'rotate-180 text-[#8e1c24]' : ''}`} />
+              </div>
+              <span className="text-[10px] text-stone-400 font-medium">
+                {formatMonthYearTh(selectedYear, selectedMonth)}
+              </span>
+            </button>
+
+            {!isCurrentMonth && (
+              <button
+                type="button"
+                onClick={handleGoCurrentMonth}
+                className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-[#8e1c24] text-[10px] font-extrabold rounded-full border border-rose-200/70 active:scale-95 transition-all cursor-pointer flex items-center gap-1 shadow-2xs"
+                title="กลับไปที่เดือนปัจจุบัน"
+              >
+                <RotateCcw size={10} strokeWidth={2.5} />
+                <span>เดือนนี้</span>
+              </button>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={handleNextMonth}
+            className="w-9 h-9 rounded-2xl flex items-center justify-center text-stone-500 hover:text-stone-800 hover:bg-stone-100 active:scale-95 transition-all cursor-pointer"
+            title="เดือนถัดไป"
+          >
+            <ChevronRight size={18} strokeWidth={2.5} />
+          </button>
+        </div>
+
+        {/* Quick Month Dropdown Picker */}
+        {showMonthPicker && (
+          <div className="mt-3 pt-3 border-t border-stone-100 animate-fade-in">
+            <div className="flex items-center justify-between mb-2 px-1">
+              <span className="text-[11px] font-bold text-stone-400">เลือกเดือนที่ต้องการดู:</span>
+              {/* Year switchers */}
+              <div className="flex items-center gap-1">
+                {[selectedYear - 1, selectedYear, selectedYear + 1].map(y => (
+                  <button
+                    key={y}
+                    type="button"
+                    onClick={() => setPickerYear(y)}
+                    className={`px-2 py-0.5 rounded-lg text-xs font-bold cursor-pointer transition-colors ${
+                      pickerYear === y
+                        ? 'bg-[#8e1c24] text-white shadow-2xs'
+                        : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                    }`}
+                  >
+                    {y}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-4 gap-1.5 pt-1">
+              {MONTH_NAMES_EN.map((mName, idx) => {
+                const mNum = idx + 1
+                const isSelected = selectedYear === pickerYear && selectedMonth === mNum
+                const isThisMonth = currentYM.year === pickerYear && currentYM.month === mNum
+                return (
+                  <button
+                    key={mName}
+                    type="button"
+                    onClick={() => {
+                      setSelectedYear(pickerYear)
+                      setSelectedMonth(mNum)
+                      setShowMonthPicker(false)
+                    }}
+                    className={`py-2 px-1 rounded-xl text-xs font-bold transition-all cursor-pointer text-center relative ${
+                      isSelected
+                        ? 'bg-[#8e1c24] text-white shadow-xs scale-102 font-extrabold'
+                        : 'bg-stone-50 hover:bg-stone-100 text-stone-700 border border-stone-200/60'
+                    }`}
+                  >
+                    <div>{mName.slice(0, 3)}</div>
+                    <div className={`text-[9px] font-medium ${isSelected ? 'text-rose-100' : 'text-stone-400'}`}>
+                      {MONTH_NAMES_TH_SHORT[idx]}
+                    </div>
+                    {isThisMonth && !isSelected && (
+                      <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[#8e1c24]"></span>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* HERO CARD: Deep Crimson Gradient (Image 2) */}
@@ -143,13 +387,20 @@ export default function FinanceView() {
         <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
 
         <div className="relative z-10">
-          <div className="text-[11px] font-bold tracking-wider text-rose-200 uppercase">
-            THIS MONTH'S SPENDING
+          <div className="flex items-center justify-between">
+            <div className="text-[11px] font-bold tracking-wider text-rose-200 uppercase">
+              {isCurrentMonth ? "THIS MONTH'S SPENDING" : `${formatMonthYear(selectedYear, selectedMonth).toUpperCase()} SPENDING`}
+            </div>
+            {!isCurrentMonth && (
+              <span className="text-[10px] font-extrabold bg-white/20 px-2 py-0.5 rounded-full text-rose-100 backdrop-blur-xs">
+                {monthlyTransactions.length} รายการ
+              </span>
+            )}
           </div>
           
           <div className="text-3xl font-extrabold tracking-tight mt-1 flex items-baseline gap-1 font-display">
             <span className="text-xl font-bold opacity-90">฿</span>
-            <span>{finance.totalSpending.toLocaleString()}</span>
+            <span>{monthlyTotalSpending.toLocaleString()}</span>
           </div>
 
           {/* Paid Split Bars */}
@@ -157,13 +408,13 @@ export default function FinanceView() {
             <div>
               <div className="text-xs text-rose-200/90 font-semibold">{cartuneName} Paid</div>
               <div className="text-base font-bold mt-0.5">
-                ฿ {finance.cartunePaid.toLocaleString()}
+                ฿ {monthlyCartunePaid.toLocaleString()}
               </div>
               {/* Progress indicator */}
               <div className="w-full bg-black/20 h-1.5 rounded-full mt-1.5 overflow-hidden">
                 <div
-                  className="bg-white/80 h-full rounded-full"
-                  style={{ width: `${finance.totalSpending > 0 ? Math.min(100, (finance.cartunePaid / finance.totalSpending) * 100) : 0}%` }}
+                  className="bg-white/80 h-full rounded-full transition-all duration-500"
+                  style={{ width: `${monthlyTotalSpending > 0 ? Math.min(100, (monthlyCartunePaid / monthlyTotalSpending) * 100) : 0}%` }}
                 ></div>
               </div>
             </div>
@@ -171,13 +422,13 @@ export default function FinanceView() {
             <div>
               <div className="text-xs text-rose-200/90 font-semibold">{gunName} Paid</div>
               <div className="text-base font-bold mt-0.5">
-                ฿ {finance.gunPaid.toLocaleString()}
+                ฿ {monthlyGunPaid.toLocaleString()}
               </div>
               {/* Progress indicator */}
               <div className="w-full bg-black/20 h-1.5 rounded-full mt-1.5 overflow-hidden">
                 <div
-                  className="bg-white/80 h-full rounded-full"
-                  style={{ width: `${finance.totalSpending > 0 ? Math.min(100, (finance.gunPaid / finance.totalSpending) * 100) : 0}%` }}
+                  className="bg-white/80 h-full rounded-full transition-all duration-500"
+                  style={{ width: `${monthlyTotalSpending > 0 ? Math.min(100, (monthlyGunPaid / monthlyTotalSpending) * 100) : 0}%` }}
                 ></div>
               </div>
             </div>
@@ -188,26 +439,26 @@ export default function FinanceView() {
             <div className="bg-white/15 backdrop-blur-md rounded-2xl p-3 border border-white/15">
               <div className="flex items-center gap-1 text-[11px] text-rose-100 font-medium">
                 <Clock size={11} />
-                <span>{cartuneName} Pending</span>
+                <span>{cartuneName} {monthlyDiff > 0 ? 'To Pay' : 'Pending'}</span>
               </div>
               <div className="text-base font-extrabold mt-0.5">
-                ฿ {finance.cartunePending.toLocaleString()}
+                ฿ {pendingCartuneAmt.toLocaleString()}
               </div>
               <div className="text-[10px] text-rose-200/80 mt-0.5">
-                {finance.cartunePendingCount} item to settle
+                {monthlyDiff > 0 ? `Owes ${gunName}` : 'Settled'}
               </div>
             </div>
 
             <div className="bg-white/15 backdrop-blur-md rounded-2xl p-3 border border-white/15">
               <div className="flex items-center gap-1 text-[11px] text-rose-100 font-medium">
                 <Clock size={11} />
-                <span>{gunName} Pending</span>
+                <span>{gunName} {monthlyDiff < 0 ? 'To Pay' : 'Pending'}</span>
               </div>
               <div className="text-base font-extrabold mt-0.5">
-                ฿ {finance.gunPending.toLocaleString()}
+                ฿ {pendingGunAmt.toLocaleString()}
               </div>
               <div className="text-[10px] text-rose-200/80 mt-0.5">
-                {finance.gunPendingCount} items to settle
+                {monthlyDiff < 0 ? `Owes ${cartuneName}` : 'Settled'}
               </div>
             </div>
           </div>
@@ -215,7 +466,7 @@ export default function FinanceView() {
           {/* Settle Balance Banner */}
           <div className="mt-3 pt-2 text-center text-[11px] font-semibold text-rose-100/90 flex items-center justify-center gap-1">
             <ArrowUpDown size={12} />
-            <span>{settleSummary}</span>
+            <span>{monthlySettleSummary}</span>
           </div>
         </div>
       </div>
@@ -224,7 +475,7 @@ export default function FinanceView() {
       <div>
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-extrabold text-stone-500 uppercase tracking-wider">
-            MONTHLY BUDGET
+            MONTHLY BUDGET {isCurrentMonth ? '' : `(${MONTH_NAMES_EN[selectedMonth - 1].toUpperCase()})`}
           </span>
           <button
             type="button"
@@ -236,12 +487,12 @@ export default function FinanceView() {
         </div>
 
         <div className="bg-white border border-stone-200/80 rounded-3xl p-4 shadow-2xs divide-y divide-stone-100">
-          {(finance.budgets || []).length === 0 ? (
+          {monthlyBudgets.length === 0 ? (
             <div className="py-6 text-center text-xs text-stone-400">
               ยังไม่มีหมวดหมู่งบประมาณ (กด + Add Category ด้านบนเพื่อเพิ่ม)
             </div>
           ) : (
-            finance.budgets.map(cat => {
+            monthlyBudgets.map(cat => {
               const Icon = getCategoryIcon(cat.name, cat.icon)
               const isOver = cat.spent > cat.budget
               const pct = cat.budget > 0 ? Math.min(100, (cat.spent / cat.budget) * 100) : 0
@@ -292,26 +543,28 @@ export default function FinanceView() {
       <div>
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-extrabold text-stone-500 uppercase tracking-wider">
-            RECENT EXPENSES
+            {isCurrentMonth ? 'RECENT EXPENSES' : `EXPENSES · ${formatMonthYear(selectedYear, selectedMonth).toUpperCase()}`}
           </span>
           <span className="text-xs text-stone-400">
-            {finance.transactions.length} items
+            {monthlyTransactions.length} items
           </span>
         </div>
 
         <div className="bg-white border border-stone-200/80 rounded-3xl p-3 shadow-2xs divide-y divide-stone-100">
-          {finance.transactions.length === 0 ? (
+          {monthlyTransactions.length === 0 ? (
             <div className="py-8 text-center">
-              <p className="text-xs text-stone-400 font-medium">ยังไม่มีรายการค่าใช้จ่ายในเดือนนี้</p>
+              <p className="text-xs text-stone-400 font-medium">
+                ยังไม่มีรายการค่าใช้จ่ายในเดือน {formatMonthYearTh(selectedYear, selectedMonth)}
+              </p>
               <button
-                onClick={() => setShowAddModal(true)}
-                className="mt-2.5 px-4 py-1.5 bg-[#8e1c24] text-white text-xs font-bold rounded-full shadow-xs active:scale-95 transition-all cursor-pointer"
+                onClick={() => openAddModalWithDate(`${selectedYear}-${String(selectedMonth).padStart(2, '0')}-01`)}
+                className="mt-2.5 px-4 py-1.5 bg-[#8e1c24] hover:bg-[#78171e] text-white text-xs font-bold rounded-full shadow-xs active:scale-95 transition-all cursor-pointer"
               >
-                + บันทึกค่าใช้จ่ายแรก
+                + บันทึกค่าใช้จ่ายในเดือนนี้
               </button>
             </div>
           ) : (
-            finance.transactions.map(tx => {
+            monthlyTransactions.map(tx => {
               const Icon = getCategoryIcon(tx.category)
               const member = resolvePayerMember(tx.payer)
               const isCartune = member?.id === 'cartune' || tx.payer.toLowerCase().includes('cartune') || (state?.users?.cartune?.name && tx.payer.includes(state.users.cartune.name))
@@ -337,7 +590,7 @@ export default function FinanceView() {
                         </span>
                         <span className="font-semibold text-stone-700">{member?.name || tx.payer}</span>
                         <span>·</span>
-                        <span>{tx.date}</span>
+                        <span>{formatTxDisplayDate(tx)}</span>
                       </div>
                     </div>
                   </div>
@@ -392,6 +645,16 @@ export default function FinanceView() {
                 />
               </div>
 
+              <div>
+                <label className="text-xs font-bold text-stone-600">Date (วันที่บันทึก)</label>
+                <input
+                  type="date"
+                  value={expenseDate}
+                  onChange={(e) => setExpenseDate(e.target.value)}
+                  className="w-full mt-1 px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-sm focus:outline-none focus:border-[#8e1c24]"
+                />
+              </div>
+
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="text-xs font-bold text-stone-600">Who Paid?</label>
@@ -429,7 +692,7 @@ export default function FinanceView() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[#8e1c24] text-white text-xs font-bold rounded-xl cursor-pointer"
+                  className="px-4 py-2 bg-[#8e1c24] hover:bg-[#78171e] text-white text-xs font-bold rounded-xl cursor-pointer shadow-xs"
                 >
                   Save Expense
                 </button>

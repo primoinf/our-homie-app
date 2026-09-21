@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react'
 import { INITIAL_DATA, MOCK_DATA, CLEAN_DATA } from '../data/initialData'
 import { syncWithGitHub, testGitHubConnection } from '../services/githubSync'
+import { getTodayDateStr } from '../utils/dateUtils'
 
 const STORAGE_KEY = 'our_homie_state_v2'
 const AUTH_KEY = 'our_homie_auth_v1'
@@ -438,21 +439,31 @@ export function AppProvider({ children }) {
   }
 
   // Finance actions
-  const addExpense = ({ title, amount, payer, category }) => {
+  const addExpense = ({ title, amount, payer, category, date }) => {
     const numAmount = parseFloat(amount) || 0
     if (!title || numAmount <= 0) return
 
     const now = Date.now()
+    const txDate = date || getTodayDateStr()
+
+    let txTime = now
+    if (date && date !== getTodayDateStr()) {
+      const parsedTime = new Date(`${date}T12:00:00`).getTime()
+      if (!isNaN(parsedTime)) {
+        txTime = parsedTime
+      }
+    }
+
     const newTx = {
       id: 't_' + now,
       title,
       amount: numAmount,
       payer: payer || state.users[state.currentUser]?.name,
-      date: 'Today',
+      date: txDate,
       verified: true,
       category: category || 'Home Supplies',
       icon: category === 'Food' ? 'Utensils' : category === 'Pets' ? 'PawPrint' : category === 'Utilities' ? 'Receipt' : 'Home',
-      createdAt: now,
+      createdAt: txTime,
       updatedAt: now
     }
 
