@@ -331,6 +331,18 @@
           "color": "#f59e0b",
           "hex": "#f59e0b"
         }
+      },
+      "2026-09-28": {
+        "gun": {
+          "mood": "calm",
+          "label": "Calm",
+          "user": "gun",
+          "userName": "ตูบศักดิ์",
+          "date": "2026-09-28",
+          "icon": "😌",
+          "color": "#a78bfa",
+          "hex": "#a78bfa"
+        }
       }
     }
   },
