@@ -279,6 +279,20 @@
         "user": "gun",
         "createdAt": 1789375254308,
         "updatedAt": 1789375254308
+      },
+      {
+        "id": "e_1790629314109",
+        "title": "ครบรอบ",
+        "date": "2026-09-04",
+        "day": 4,
+        "time": "",
+        "type": "shared",
+        "kind": "event",
+        "completed": false,
+        "color": "#8e1c24",
+        "user": "gun",
+        "createdAt": 1790629314109,
+        "updatedAt": 1790629314109
       }
     ],
     "moods": {
